@@ -3,6 +3,55 @@
 All notable changes to the connector-qa skill. Versions follow semver; `schema_version` on the
 artifacts tracks the major version and a reader refuses a mismatched major.
 
+## 3.9.3 — 2026-10-09
+
+Page capture without a model in the loop. Reading a JavaScript-drawn API reference (QuickBooks Online: 74
+pages, each about 12k tokens of text) meant a model driving a browser tool and carrying every page's text to
+disk through its own context. That cost per-page tokens, risked a copy error on every page, and froze the
+browser tab more than once under long scripts. The first attempt skipped it and kept only the operation headings and
+endpoint lines of each page — an excerpt the evidence check could have accepted as if it were the page (it compares against whatever text
+is saved, and `snap --text-file` applies only a 400-character bar to browser text; not run on those excerpts). The skill had no way to get rendered text onto disk
+without a model, so each run improvised one.
+
+- **`render` — `api-from-docs.mjs render --dir <d> (--pending | --url u1,u2) [--browser <exe>]`.** Starts the
+  Chrome, Edge, Chromium or Brave already on the machine, headless, on a throwaway profile (no cookies, no
+  sign-in); loads each page; waits until its text has stopped changing; and writes the text straight to the
+  snapshot store as fetcher `headless`. Page text never enters a model's context, so the per-page token cost is
+  zero and there is nothing to mistype. A page that never finishes drawing, or reads as a shell, is refused
+  with the reason and left pending — never saved as if it were the page. No new dependency: it speaks the
+  DevTools protocol over Node's built-in WebSocket, so it needs Node 22 or newer for this command only.
+- **Polite by construction, unchanged.** One page at a time, `delay_ms` apart, public pages only, an honest
+  user agent, and **`robots.txt` is read first: a page it disallows is excluded with that reason and never
+  loaded** (`lib/page-reader.mjs` `robotsGate`, the same rules `politeGet` applies). `render` does not
+  bypass anything the plain reader would not read.
+- **`ingest` — for pages a person reads in their own browser.** `ingest --snippet` prints a console snippet
+  that waits for the page to draw and downloads its text as `<prefix><last path segment>.txt`; `ingest --from
+  <folder>` files the downloads. It matches each file to the inventory page whose last path segment equals its
+  name, **refuses a name two pages share rather than guessing**, applies the strict whole-page length bar, and
+  records the browser used. This is the path for pages `robots.txt` disallows and for machines without a
+  browser or Node 22. It is what was done by hand for Intuit's reference, now reproducible.
+- **Where it does and does not help.** Intuit's `robots.txt` disallows `developer.intuit.com`, so `render`
+  refuses those pages by design; for them `ingest` (a person in their own browser, with their say-so) is the
+  path. `render` is for the many vendor sites whose reference is JavaScript-drawn and open to readers.
+- **Efficiency (estimates, not measurements across vendors).** Through a model: roughly 12k tokens a page to
+  read and the same to write, about 1.5–2M tokens for 74 pages, plus a browser batch per ~12 pages. With
+  `render`: no model tokens for page text; wall time is the 1 s polite delay plus the settle window, about
+  3–6 s a page, so 74 pages take minutes, not a session. The saved text is the page as the browser drew it, so
+  the evidence check (`merge`) compares against the whole page, not an excerpt.
+- **Wiring.** `headless` joins `FETCHERS` and `RENDERED` (`lib/page-reader.mjs`), so snapshots, `prep` and
+  `merge` accept it unchanged. New defaults `capabilities.api_docs.render_settle_ms` (1500) and
+  `render_timeout_ms` (45000). `RENDER_HELP`, `references/10a-page-reader.md` §2–3, `10-capabilities.md` §1.5a
+  and `15-scripts.md` say `render` first, then the session's browser tools, then `ingest`.
+- **Tests — `tests/headless-capture-393.test.mjs` (new, 10).** Against a local site: a page drawn by script
+  after load is saved whole, to its last line, as `headless` (while a plain `snap` of the same page is refused as
+  a shell); a `robots.txt`-disallowed page is excluded and nothing of it is stored; a page stuck on "Loading…"
+  is refused and left pending; `ingest` files one download and refuses a thin file, an ambiguous name, an unknown
+  name and a file without the prefix; the settle rule and browser lookup are unit-tested. The browser-driven
+  tests skip where no browser or Node 22 is present.
+- **Not changed, and noted.** `snap --text-file` still applies a lenient 400-character bar to browser text
+  while plain HTTP applies 1,500; `render` and `ingest` use the strict bar because they save whole pages.
+  Aligning `snap` and recording how each page was captured in the report is left for a later release.
+
 ## 3.9.2 — 2026-10-09
 
 An API list assembled without evidence is found, rebuilt and said. QuickBooks Online ran on 3.9.0/3.9.1

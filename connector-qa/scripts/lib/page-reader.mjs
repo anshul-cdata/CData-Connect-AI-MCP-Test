@@ -13,6 +13,7 @@
  *   parseSitemap(xml) · linksFrom(html, base)   the pages a site lists
  *   snapshotStore(dir, sub)     saved page text: _agent_out/<sub>/<hash>.txt + index.json, one per URL
  *   fetchPage(url) · politeGet  plain HTTP: sequential, public pages, robots.txt respected
+ *   robotsGate(opts)            the robots.txt decision alone, for a reader that fetches the page itself (headless-capture.mjs)
  *
  * A snapshot is the page's text exactly as the reader got it, so a model's extraction can be checked
  * against it word for word (contains()). WebFetch is fine for a quick look, but it returns a model's
@@ -23,9 +24,10 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const FETCHERS = ['http', 'browser_pane', 'playwright', 'chrome'];
-export const RENDERED = ['browser_pane', 'playwright', 'chrome'];
+export const FETCHERS = ['http', 'headless', 'browser_pane', 'playwright', 'chrome'];
+export const RENDERED = ['headless', 'browser_pane', 'playwright', 'chrome'];
 export const READER_DEFAULTS = { shell_min_chars: 1500, chunk_chars: 40000, chunk_overlap_chars: 600, delay_ms: 1000, timeout_ms: 30000,
+  render_settle_ms: 1500, render_timeout_ms: 45000,
   user_agent: 'connector-qa-page-reader (public documentation; respects robots.txt)' };
 
 /* ── HTML → text ─────────────────────────────────────────────────────────── */
@@ -224,5 +226,17 @@ export function politeGet(opts = {}) {
     if (!robotsAllows(robots.get(origin), url, o.user_agent)) return { ok: false, status: 0, url, body: '', error: 'robots.txt disallows it', robots: true };
     await wait();
     return fetchPage(url, { ua: o.user_agent, timeoutMs: o.timeout_ms });
+  };
+}
+
+/** The robots.txt decision for a reader that loads the page itself (the headless browser): async (url) →
+ * { allowed, error? }. robots.txt is read once per origin; the same rules politeGet applies. */
+export function robotsGate(opts = {}) {
+  const o = { ...READER_DEFAULTS, ...opts };
+  const robots = new Map();
+  return async function allowed(url) {
+    let origin; try { origin = new URL(url).origin; } catch { return { allowed: false, error: 'not a URL' }; }
+    if (!robots.has(origin)) { const r = await fetchPage(origin + '/robots.txt', { ua: o.user_agent, timeoutMs: o.timeout_ms }); robots.set(origin, r.ok ? r.body : ''); }
+    return { allowed: robotsAllows(robots.get(origin), url, o.user_agent) };
   };
 }

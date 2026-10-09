@@ -4,7 +4,7 @@
     "Leave `root` empty: install.ps1 fills it in for the machine it runs on, which keeps every",
     "shared copy of this folder free of anyone's username. See SKILL.md 0.1 for resolution order."
   ],
-  "version": "3.9.2",
+  "version": "3.9.3",
   "schema_version": "2.0.0",
   "root": "",
   "root_fallback": "%USERPROFILE%\\Documents\\ConnectAIMCPTest",
@@ -136,8 +136,8 @@
     "mcp_table_ops": ["SELECT", "INSERT", "UPDATE"],
     "compare_vendor_mcp": true,
     "vendor_mcp_recheck_days": 90,
-    "api_docs": { "shell_min_chars": 1500, "chunk_chars": 40000, "chunk_overlap_chars": 600, "delay_ms": 1000, "timeout_ms": 30000 },
-    "$api_docs_comment": "3.9: the shared page reader (references/10a-page-reader.md) used by api-from-docs.mjs (Stage 1.5a without an OpenAPI) and by use case research. A page whose text is shorter than shell_min_chars, or an API page with no endpoint-like line and the signs of a client-side app, is a JavaScript shell and is read with a rendered browser. Long pages are saved in chunk_chars parts. Plain HTTP requests are sequential, delay_ms apart, and respect robots.txt.",
+    "api_docs": { "shell_min_chars": 1500, "chunk_chars": 40000, "chunk_overlap_chars": 600, "delay_ms": 1000, "timeout_ms": 30000, "render_settle_ms": 1500, "render_timeout_ms": 45000 },
+    "$api_docs_comment": "3.9: the shared page reader (references/10a-page-reader.md) used by api-from-docs.mjs (Stage 1.5a without an OpenAPI) and by use case research. A page whose text is shorter than shell_min_chars, or an API page with no endpoint-like line and the signs of a client-side app, is a JavaScript shell and is read with a rendered browser. Long pages are saved in chunk_chars parts. Plain HTTP requests are sequential, delay_ms apart, and respect robots.txt. 3.9.3: `api-from-docs.mjs render` reads pages in a headless Chrome/Edge already on the machine (needs Node 22+) and writes the text straight to disk; render_settle_ms is how long a page's text must hold still before it counts as drawn, render_timeout_ms the ceiling per page. It refuses pages robots.txt disallows.",
     "$compare_vendor_mcp_comment": "3.8: Stage 1.5e runs by default in capability mode — the source vendor's own MCP server is compared with CData ConnectAI MCP on the same capability list (reference-mcp.mjs). false, or --no-compare-mcp for one run, skips it. A vendor with no MCP server is recorded once (reference-mcp.mjs none); the tool list is read again when older than vendor_mcp_recheck_days.",
     "$mcp_table_ops_comment": "3.7: the table operations ConnectAI MCP's tools can run (queryData, execute_insert, execute_update). A driver DELETE outside this list is not supported through MCP; a delete procedure still is. Add DELETE here only if the MCP server gains a delete tool."
   },

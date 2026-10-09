@@ -2,7 +2,7 @@
 name: connector-qa
 description: "Test, validate and measure real-world coverage for one CData connector through the Connect AI MCP server. Use this skill whenever the user wants to test, validate, QA, benchmark, regression-check or measure coverage for a connector — NetSuite, Salesforce, QuickBooks, ServiceNow, Jira, GitHub, Office365, or any of the 300+ CData connectors. Triggers include: 'test <connector>', 'validate <connector>', 'run connector QA', 'check MCP coverage', 'gap analysis for <connector>', 'does <connector> actually work', 'which business use cases does <connector> support', 'why are <connector> queries failing', 'generate a connector test report', or any mention of connector coverage, MCP query validation, SQL capability testing, or customer query dumps. Also use it to resume an interrupted connector run — re-invoking picks up from the last checkpoint. Produces two HTML reports: test results, and a separate gap analysis."
 license: Internal use. See LICENSE.txt
-version: 3.9.2
+version: 3.9.3
 ---
 
 # Connector QA Runtime

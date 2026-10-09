@@ -1,6 +1,6 @@
 {
   "name": "connector-qa",
-  "version": "3.9.2",
+  "version": "3.9.3",
   "private": true,
   "description": "Coverage-driven QA runtime for CData connectors through the Connect AI MCP server — Claude Code skill",
   "type": "module",

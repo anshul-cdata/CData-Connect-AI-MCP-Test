@@ -21,24 +21,49 @@ decides; `probe` prints `READER http` or `READER rendered`.
 
 ## 2 · A rendered browser when it is a shell
 
-Use whichever is available in the session — check with ToolSearch before saying none is:
+**First choice since 3.9.3 — `render`, no model in the loop.** When a Chrome, Edge, Chromium or Brave is
+installed and Node is 22 or newer, `api-from-docs.mjs render` starts it headless on a throwaway profile,
+waits until each page's text stops changing, and writes the text straight to the snapshot store. Page
+text never passes through a model's context: no per-page token cost, no transcription errors, no browser
+tab to freeze. It reads the same public pages the other readers do, one at a time, `delay_ms` apart, and
+**refuses any page `robots.txt` disallows** (excluded with that reason). It applies the strict whole-page
+length bar (`shell_min_chars`) and saves nothing for a page that never finishes drawing.
+
+```bash
+node "<skill>/scripts/api-from-docs.mjs" render --dir "<dir>" --pending          # every page not yet read
+node "<skill>/scripts/api-from-docs.mjs" render --dir "<dir>" --url "<u1>,<u2>"   # or chosen pages
+```
+
+`--browser <exe>` (or `CONNECTOR_QA_BROWSER`) names a browser the search does not find. A slow site:
+raise `capabilities.api_docs.render_timeout_ms`; a page that keeps drawing late: `render_settle_ms`.
+
+**When `render` cannot be used** — no browser or Node 22, or a page `robots.txt` disallows — use whichever
+reader the session has (check with ToolSearch before saying none is), or have a person read the page:
 
 | Reader | How to get a page's text | `--fetcher` |
 |---|---|---|
 | Claude desktop browser pane | `navigate` to the URL, then `get_page_text` | `browser_pane` |
 | Playwright MCP | `browser_navigate`, then `browser_evaluate` with `() => document.body.innerText` | `playwright` |
 | Claude in Chrome | `navigate`, then `get_page_text` | `chrome` |
+| A person's own browser | `ingest --snippet` prints a console snippet; run it on each page, then `ingest --from <Downloads>` files the downloads | `chrome` (or the browser used) |
+
+A tool that returns the text to the model (the first three rows) still makes the model carry it to disk
+word for word; the last row does not. `ingest` matches each download to the inventory page whose last path
+segment equals the file's name, refuses a name two pages share rather than guessing, and applies the same
+strict length bar. Pages `robots.txt` disallows are read only by a person in their own browser, with their
+say-so — the skill never fetches them itself.
 
 **None available → stop and ask the user** to enable Playwright MCP (free, runs locally). Never fall
 back to guessing from search snippets or a model's memory of the API, and never use a paid crawler.
-Record the reader used (`--fetcher`); it is shown in the reports.
+Record the reader used (`--fetcher`: `headless` for `render`); it is shown in the reports.
 
 Wait for the page to finish loading (a reference page often fills in after a second or two); text that
-still reads as a shell is refused by `snap`.
+still reads as a shell is refused by `snap`, `render` and `ingest`.
 
 ## 3 · Save the page's own text — never a summary
 
-Write the text the reader returned to a file and register it:
+`render` and `ingest` save for you. For a reader that hands the text to the model, write the text it
+returned to a file and register it:
 
 ```bash
 node "<skill>/scripts/api-from-docs.mjs" snap --dir "<dir>" --url "<page>" --text-file "<file>" --fetcher playwright

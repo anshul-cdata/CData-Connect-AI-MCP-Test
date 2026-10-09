@@ -61,7 +61,10 @@ node "<skill>/scripts/api-from-docs.mjs" status    --dir "<dir>"
    `--include` keeps the API reference and excludes the rest with a reason. Every page ends extracted
    or excluded with a reason (`exclude --url|--match --why "…"`); `status` exits 3 until it does.
 2. **Read and save.** `snap` saves each page's own text under `_agent_out/api-docs/<hash>.txt` with its
-   URL (long pages also in parts). A page that still reads as a shell is refused.
+   URL (long pages also in parts). A page that still reads as a shell is refused. For a JavaScript-drawn
+   site, `render` (3.9.3) reads the pages in a headless browser already on the machine and writes the text
+   straight to disk — no model carries it — and refuses any page `robots.txt` disallows; `ingest` files text
+   a person downloaded from their own browser (`10a-page-reader.md` §2).
 3. **Extract — by model, from the saved text only.** `prep` writes `extract-input.json`: batches of
    saved pages and the contract. Dispatch one `general-purpose` agent per batch
    (`model: config.models.research`). Each returns `{"ops":[{entity, operation, method, path, summary,

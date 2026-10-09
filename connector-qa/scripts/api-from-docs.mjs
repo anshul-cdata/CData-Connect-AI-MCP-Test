@@ -8,6 +8,8 @@
  *   node api-from-docs.mjs inventory --dir <d> [--sitemap url|file] [--index url|file] [--urls file] [--include re] [--exclude re] [--robots file]
  *   node api-from-docs.mjs exclude   --dir <d> (--url u | --match re) --why "<reason>"
  *   node api-from-docs.mjs snap      --dir <d> (--url u [--text-file f --fetcher F] | --from list.json | --pending)
+ *   node api-from-docs.mjs render    --dir <d> (--url u1[,u2] | --pending) [--browser <exe>] [--expect api|prose]   (3.9.3: headless browser, text straight to disk)
+ *   node api-from-docs.mjs ingest    --dir <d> --from <folder> [--prefix p] [--fetcher chrome|browser_pane|playwright] [--move] | --snippet [--prefix p]
  *   node api-from-docs.mjs prep      --dir <d> [--per-agent N]
  *   node api-from-docs.mjs merge     --dir <d> [--ops f1,f2] [--rung reference_docs|sdk] [--title t] [--version v] [--entities file]
  *   node api-from-docs.mjs status    --dir <d>
@@ -23,22 +25,30 @@
  * saved text shows word for word and writes <Connector>_api.json for capability-list.mjs read.
  * `status` exits 3 while a page is neither extracted nor excluded with a reason.
  *
+ * `render` (3.9.3) is the way past a JavaScript shell that needs no model: it starts the Chrome or Edge
+ * already on the machine, headless, reads each page once it has stopped changing and writes the text
+ * straight to the snapshot store — page text never passes through a model's context. It refuses any page
+ * robots.txt disallows. For those, and where no browser is installed, a person reads the page in their own
+ * browser and `ingest` files the downloaded text (`ingest --snippet` prints the console snippet).
+ *
  * Polite by construction: one request at a time, config.capabilities.api_docs.delay_ms apart, public
  * pages only, robots.txt read first. No paid crawler, no sign-in.
  */
-import { readFileSync, writeFileSync, existsSync, readdirSync, copyFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, copyFileSync, mkdirSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { readJson, writeJson, loadConfig, fail, EXIT } from './lib/artifacts.mjs';
 import { parseArgs, resolveConnector } from './lib/cli.mjs';
 import { READER_DEFAULTS, RENDERED, FETCHERS, htmlToText, assessPage, snapshotStore, normalizeUrl, linksFrom, parseSitemap,
-         robotsAllows, politeGet } from './lib/page-reader.mjs';
+         robotsAllows, politeGet, robotsGate } from './lib/page-reader.mjs';
+import { openBrowser, renderBlocker } from './lib/headless-capture.mjs';
 import { sniffFormat, specLinksIn, wellKnownUrls, CONVERTERS, toOpenApi, mergeOps, completenessHint, RUNGS, OP_KINDS } from './lib/api-docs.mjs';
 
-const CMDS = ['ladder', 'convert', 'probe', 'inventory', 'exclude', 'snap', 'prep', 'merge', 'status'];
+const CMDS = ['ladder', 'convert', 'probe', 'inventory', 'exclude', 'snap', 'render', 'ingest', 'prep', 'merge', 'status'];
 const USAGE = `usage: api-from-docs.mjs <${CMDS.join('|')}> --dir <connectorDir> …  (see the header of this script)`;
 const a = parseArgs(process.argv.slice(2), {
   known: ['dir', 'connector', 'docs', 'github', 'try', 'file', 'url', 'expect', 'text-file', 'fetcher', 'title', 'sitemap', 'index', 'urls',
-          'include', 'exclude', 'robots', 'match', 'why', 'from', 'pending', 'per-agent', 'ops', 'rung', 'version', 'entities', 'delay-ms'],
+          'include', 'exclude', 'robots', 'match', 'why', 'from', 'pending', 'per-agent', 'ops', 'rung', 'version', 'entities', 'delay-ms',
+          'browser', 'prefix', 'move', 'snippet'],
   usage: USAGE,
 });
 const cmd = a._[0];
@@ -63,11 +73,14 @@ const saveInv = inv => { inv.updated_at = now(); writeJson(INV, inv); };
 const invMap = inv => new Map(inv.pages.map(p => [p.url, p]));
 const readerOf = () => existsSync(F('reader.json')) ? readJson(F('reader.json')) : null;
 const RENDER_HELP = [
-  'Read it with a rendered browser, whichever is available, and save the text to a file:',
+  'Read it with a rendered browser. Easiest, with no model in the loop (needs a Chrome/Edge/Chromium on this machine and Node 22+):',
+  '  · api-from-docs.mjs render --dir <d> --url <u>   (or --pending) — headless, straight to disk; it refuses robots.txt-disallowed pages',
+  'Otherwise read it with whichever browser the session has and save the text to a file:',
   '  · Claude desktop browser pane — navigate, then get_page_text',
   '  · Playwright MCP — browser_navigate, then browser_evaluate "() => document.body.innerText"',
   '  · Claude in Chrome — navigate, then get_page_text',
   '  then: api-from-docs.mjs snap --dir <d> --url <u> --text-file <file> --fetcher browser_pane|playwright|chrome',
+  'Pages you read yourself in your own browser (also ones robots.txt disallows): api-from-docs.mjs ingest --snippet, run it on each page, then ingest --from <Downloads folder>.',
   'None available? Stop and ask the user to enable Playwright MCP (free, runs locally). Never use a paid crawler.',
 ].join('\n');
 /** keep the previous file when a new one replaces it */
@@ -284,6 +297,79 @@ if (cmd === 'snap') {
   say(`SNAP — ${conn} · ${saved} page(s) saved under ${store.root}`);
   for (const p of problems.slice(0, 20)) say(`  ✗ ${p}`);
   if (problems.some(p => /rendered browser|had not loaded/.test(p))) say('\n' + RENDER_HELP.replace('<d>', a.dir));
+  process.exit(problems.length && !saved ? EXIT.DATA : EXIT.OK);
+}
+
+/* ── render: read pages in a headless browser, text straight to disk (3.9.3) ─────────────── */
+if (cmd === 'render') {
+  const inv = loadInv(), have = invMap(inv);
+  const urls = a.pending ? inv.pages.filter(p => p.status === 'pending').map(p => p.url) : list(a.url);
+  if (!urls.length) fail('nothing to render — give --url or --pending (inventory first)', EXIT.USAGE);
+  const exe = a.browser && a.browser !== true ? a.browser : undefined;
+  const why = renderBlocker({ browser: exe });
+  if (why) fail(`${why}\n\n${RENDER_HELP}`, EXIT.DATA);
+  const expect = a.expect === 'prose' ? 'prose' : 'api';
+  const allowed = robotsGate(R);
+  let br;
+  try { br = await openBrowser({ browser: exe, userAgent: R.user_agent }); }
+  catch (e) { fail(`could not start a browser: ${e.message}`, EXIT.DATA); }
+  let saved = 0, last = 0; const problems = [];
+  try {
+    for (const raw of urls) {
+      const url = normalizeUrl(raw);
+      const page = url && have.get(url);
+      if (!page) { problems.push(`${raw}: not in the inventory — add it first (inventory --urls), or it cannot be cited`); continue; }
+      const g = await allowed(url);
+      if (!g.allowed) { page.status = 'excluded'; page.reason = 'robots.txt disallows it'; problems.push(`${url}: robots.txt disallows it — excluded. A page you read yourself in your own browser can be filed with ingest (references/10a-page-reader.md §3)`); continue; }
+      const gap = last + R.delay_ms - Date.now(); if (gap > 0) await new Promise(r => setTimeout(r, gap));
+      const r = await br.capture(url, { settleMs: R.render_settle_ms, timeoutMs: R.render_timeout_ms });
+      last = Date.now();
+      if (r.error) { problems.push(`${url}: ${r.error}`); continue; }
+      const as = assessPage({ text: r.text, expect, minChars: R.shell_min_chars });
+      if (as.verdict !== 'ok') { problems.push(`${url}: the rendered text reads as ${as.verdict} (${as.reason})${r.timedOut ? ' — it was still changing at the time limit; raise capabilities.api_docs.render_timeout_ms' : ''}`); continue; }
+      store.put({ url, text: r.text, fetcher: 'headless', title: r.title || null });
+      page.status = 'saved'; page.fetcher = 'headless'; delete page.reason; saved++;
+    }
+  } finally { await br.close(); saveInv(inv); }
+  say(`RENDER — ${conn} · ${saved} page(s) saved under ${store.root} · headless ${br.browser}`);
+  for (const p of problems.slice(0, 20)) say(`  ✗ ${p}`);
+  /* Node 24 on Windows aborts inside libuv (0xC0000409) when process.exit() runs while the robots.txt fetch's connection is still closing */
+  await new Promise(r => setTimeout(r, 250));
+  process.exit(problems.length && !saved ? EXIT.DATA : EXIT.OK);
+}
+
+/* ── ingest: file pages a person read in their own browser (3.9.3) ───────────────────────── */
+/* One console snippet for any browser: waits for the page to draw, downloads its text as <prefix><last path segment>.txt */
+const snippetFor = prefix => `(async()=>{let k=0;while(document.body.innerText.length<3000&&k++<30)await new Promise(r=>setTimeout(r,500));const t=document.body.innerText;const s=decodeURIComponent(location.pathname.split('/').filter(Boolean).pop()||'index').toLowerCase();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t]));a.download=${JSON.stringify(prefix)}+s+'.txt';document.body.appendChild(a);a.click();a.remove();return s+' '+t.length})()`;
+const slugOf = u => { try { return decodeURIComponent(new URL(u).pathname.split('/').filter(Boolean).pop() || 'index').toLowerCase(); } catch { return null; } };
+if (cmd === 'ingest') {
+  const prefix = a.prefix && a.prefix !== true ? String(a.prefix) : '';
+  if (a.snippet) { say(`Run this in the browser console on each reference page (the browser may ask to allow downloads); the files land in the Downloads folder:\n\n${snippetFor(prefix)}\n\nThen: api-from-docs.mjs ingest --dir <d> --from <Downloads folder>${prefix ? ` --prefix ${prefix}` : ''} [--move]`); process.exit(EXIT.OK); }
+  if (!a.from || a.from === true || !existsSync(a.from)) fail('--from must name the folder the browser downloaded the page text to (or use --snippet)', EXIT.USAGE);
+  const fetcher = a.fetcher && a.fetcher !== true ? String(a.fetcher) : 'chrome';
+  if (!RENDERED.includes(fetcher) || fetcher === 'headless') fail(`--fetcher must be one of ${RENDERED.filter(f => f !== 'headless').join(', ')} (the browser that drew the page)`, EXIT.USAGE);
+  const inv = loadInv();
+  const bySlug = new Map();
+  for (const p of inv.pages) { const s = slugOf(p.url); if (s) bySlug.set(s, [...(bySlug.get(s) || []), p]); }
+  const files = readdirSync(a.from).filter(f => f.toLowerCase().endsWith('.txt') && f.startsWith(prefix));
+  let saved = 0; const problems = [];
+  for (const f of files) {
+    const stem = f.slice(prefix.length, -4).toLowerCase();
+    const cands = bySlug.get(stem) || [];
+    if (cands.length === 0) { problems.push(`${f}: no inventory page ends in "${stem}" — add the page (inventory --urls) or rename the file`); continue; }
+    if (cands.length > 1) { problems.push(`${f}: ${cands.length} inventory pages end in "${stem}" (${cands.map(c => c.url).join(' · ')}) — save it with snap --url <u> --text-file ${f} instead of guessing`); continue; }
+    const page = cands[0];
+    const text = readFileSync(join(a.from, f), 'utf8');
+    /* a person-read page is a whole page: the strict length bar applies, not the lenient one for short browser excerpts */
+    const as = assessPage({ text, expect: 'api', minChars: R.shell_min_chars });
+    if (as.verdict !== 'ok') { problems.push(`${f}: the text reads as ${as.verdict} (${as.reason}) — the page had not finished drawing; read it again`); continue; }
+    store.put({ url: page.url, text, fetcher, title: null });
+    page.status = 'saved'; page.fetcher = fetcher; delete page.reason; saved++;
+    if (a.move) { const dst = F('src'); mkdirSync(dst, { recursive: true }); renameSync(join(a.from, f), join(dst, f)); }
+  }
+  saveInv(inv);
+  say(`INGEST — ${conn} · ${saved} of ${files.length} file(s) saved under ${store.root}${a.move ? ' · originals moved to _agent_out/api-docs/src' : ''}`);
+  for (const p of problems.slice(0, 20)) say(`  ✗ ${p}`);
   process.exit(problems.length && !saved ? EXIT.DATA : EXIT.OK);
 }
 
