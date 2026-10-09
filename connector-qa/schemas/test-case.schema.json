@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "connector-qa/test-case.schema.json",
+  "title": "TestCase",
+  "description": "One test case as written to plan.json and, once executed, to checkpoint.jsonl. gap_ids is mandatory and non-empty: a test that closes no gap is not written.",
+  "type": "object",
+  "required": ["id", "gap_ids", "uc", "prompt", "target_objects", "query_patterns", "group", "process_group", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^TC-\\d{3,}$" },
+    "gap_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^GAP-\\d{3,}$" } },
+    "uc": { "type": "string", "maxLength": 80 },
+    "use_case_ids": { "type": "array", "items": { "type": "string", "pattern": "^UC-\\d{3,}$" } },
+    "sp_name": { "type": "string" },
+    "behavior": { "type": "string" },
+    "business_domain": { "type": "string" },
+    "business_intent": { "type": ["string", "null"] },
+    "prompt": { "type": "string", "minLength": 20 },
+    "expected_sql": { "type": "string" },
+    "expected_semantics": { "type": "object" },
+    "target_objects": { "type": "array", "items": { "type": "string" } },
+    "target_columns": { "type": "array", "items": { "type": "string" } },
+    "relationships": { "type": "array", "items": { "type": "string" } },
+    "query_patterns": { "type": "array", "items": { "type": "string" } },
+    "priority": { "enum": ["P1", "P2", "P3", "P4"] },
+    "group": { "type": "string" },
+    "group_id": { "type": "string" },
+    "group_type": { "enum": ["process", "role", "persona", "intent", "behavior", "procedure", "schema_sweep", "boundary", "workflow", "write"] },
+    "process_group": { "type": "string" },
+    "roles": { "type": "array", "items": { "type": "string" } },
+    "access_level": { "enum": ["F", "E", "C", "V", "N"] },
+    "status": { "enum": ["ne", "pass", "pass_sql", "pass_col", "pass_tbl", "pass_schema", "pass_dtype", "pass_query", "partial", "fail", "boundary", "not_exec", "na", "nt"] },
+    "owner": { "enum": ["owner-ai", "owner-driver", "owner-schema", "owner-ok", null] },
+    "steps": { "type": "array", "items": {
+      "type": "object", "required": ["t"],
+      "properties": { "t": { "enum": ["p", "f", "b", "d"] }, "q": { "type": "string" }, "e": { "type": "string" }, "r": { "type": "string" }, "a": { "type": "string" } },
+      "if": { "properties": { "t": { "enum": ["f", "b", "d"] } } }, "then": { "required": ["a"] }
+    } },
+    "observed": { "type": ["object", "null"], "properties": {
+      "sql": { "type": "string" }, "fallback_sql": { "type": "string" },
+      "objects": { "type": "array" }, "columns": { "type": "array" }, "patterns": { "type": "array" }, "joins": { "type": "array" }, "divergence": { "type": "array" } } },
+    "time": { "type": "string" }, "est_in": { "type": "integer" }, "est_out": { "type": "integer" }, "tool_calls": { "type": "integer" },
+    "suite": { "enum": ["business", "conformance"], "description": "business: a persona with a goal, presented as a business scenario. conformance: a connector check (join, pattern, procedure, write, behaviour), never presented as a use case." },
+    "prompt_status": { "enum": ["draft", "research", "rewritten", "accepted"], "description": "business tests only. draft: composed by generate-tests.mjs and awaiting the Stage 8.5 rewrite. research: verbatim from the persona researcher's daily_questions. rewritten / accepted: settled by Stage 8.5." },
+    "brief": { "type": "object", "description": "What the Stage 8.5 writer needs: persona, goal, the things involved in people's words, scope.", "properties": {
+      "persona": { "type": ["object", "null"] }, "goal": { "type": "string" }, "things": { "type": "array" }, "scope": { "type": "string" }, "must_exercise": { "type": "array" } } },
+    "expected_behavior": { "type": "array", "items": { "type": "string" }, "description": "What the judge checks. Test mechanics (read back, restore, discover the key) live here, never in the prompt." },
+    "agent_context": { "type": "string", "description": "The operating note Stage 9 hands the agent under test beside the question: write rules, the workspace when one is set. Never shown as part of the prompt." },
+    "persona": { "type": ["string", "null"] },
+    "realism": { "type": "object", "properties": {
+      "score": { "type": "number", "minimum": 1, "maximum": 5 }, "criteria": { "type": "object" }, "issues": { "type": "array" },
+      "suggestion": { "type": "string" }, "judge_model": { "type": ["string", "null"] },
+      "judged_prompt": { "type": "string", "description": "The wording that was scored. A prompt rewritten after scoring is unscored." } } },
+    "realism_lint": { "type": "array", "items": { "enum": ["empty", "tester_instruction", "raw_id", "sql_jargon", "schema_name"] } }
+  },
+  "allOf": [
+    {
+      "$comment": "A procedure test must name the procedure it exercises, or Stage 10 cannot credit it.",
+      "if": { "properties": { "group_type": { "const": "procedure" } }, "required": ["group_type"] },
+      "then": { "required": ["sp_name"] }
+    },
+    {
+      "$comment": "A behavior test must name the behavior it exercises, or Stage 10 cannot credit it.",
+      "if": { "properties": { "group_type": { "const": "behavior" } }, "required": ["group_type"] },
+      "then": { "required": ["behavior"] }
+    }
+  ]
+}

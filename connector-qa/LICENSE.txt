@@ -1,0 +1,17 @@
+connector-qa
+Copyright (c) 2026 CData Software
+
+INTERNAL USE
+
+This skill is provided for internal use within CData Software and with partners
+under an existing agreement. It may be copied, modified and redistributed inside
+that scope.
+
+The skill reads local files only. Customer query dumps supplied to
+scripts/mine-dump.mjs are parsed on the machine that runs them and are never
+transmitted anywhere. Aggregate figures derived from them — object frequencies,
+SQL pattern rates, normalized error clusters — are written into the generated
+reports. Review a report before sharing it outside the team if the dump it was
+built from contained sensitive schema or business terms.
+
+Provided as is, without warranty of any kind.

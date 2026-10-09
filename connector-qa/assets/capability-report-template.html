@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%231d5fbf%22/%3E%3Cpath d=%22M9 17l4.5 4.5L23 11%22 stroke=%22white%22 stroke-width=%223.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* connector-qa capability report. Built by scripts/build-capability-report.mjs from the results
+   store — never edit by hand. Layout: the answer first, tabs for the evidence. */
+/* ── design tokens ─────────────────────────────────────────────────────────── */
+:root{
+  --bg:#f3f5f8;--surface:#fff;--surface-2:#f8fafc;--ink:#0f1b2d;--ink-2:#334155;--muted:#5b6778;--line:#e2e7ee;--line-strong:#cdd5e0;--soft:#eef2f6;
+  --accent:#1d5fbf;--accent-soft:#e7effb;--ok:#1d7a4c;--ok-soft:#e3f3ea;--warn:#9a5a06;--warn-soft:#fcefd9;--bad:#b42318;--bad-soft:#fdeceb;
+  --na:#687384;--na-soft:#eef1f5;--blue:#1d5fbf;--blue-soft:#e7effb;
+  --hero-1:#0b1d36;--hero-2:#173a68;--hero-muted:#b6c4d8;
+  --m0:#1d5fbf;--m1:#2f8a5b;--m2:#b0701f;--m3:#7454b8;--m4:#b0466c;--m5:#2a8a91;
+  --vs-correct:#639922;--vs-correct-bg:#EAF3DE;--vs-correct-fg:#27500A;--vs-partly:#BA7517;--vs-partly-bg:#FAEEDA;--vs-partly-fg:#633806;
+  --vs-incorrect:#E24B4A;--vs-incorrect-bg:#FCEBEB;--vs-incorrect-fg:#791F1F;--vs-unsupported:#7F77DD;--vs-unsupported-bg:#EEEDFE;--vs-unsupported-fg:#3C3489;
+  --vs-refused:#D4537E;--vs-refused-bg:#FBEAF0;--vs-refused-fg:#72243E;--vs-account:#378ADD;--vs-account-bg:#E6F1FB;--vs-account-fg:#0C447C;
+  --vs-data:#1D9E75;--vs-data-bg:#E1F5EE;--vs-data-fg:#085041;--vs-na:#B4B2A9;--vs-na-bg:#F1EFE8;--vs-na-fg:#444441;
+  --shadow:0 1px 2px rgb(16 24 40 / .05),0 1px 3px rgb(16 24 40 / .05);--shadow-hover:0 4px 12px rgb(16 24 40 / .08);
+  --radius:12px;
+  --f-display:"Inter","Segoe UI",system-ui,sans-serif;--f-body:"Inter","Segoe UI",system-ui,sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0c121a;--surface:#141c26;--surface-2:#18212d;--ink:#e7edf4;--ink-2:#c3cdd9;--muted:#93a1b2;--line:#253141;--line-strong:#324154;--soft:#1b2532;
+  --accent:#7fb2f0;--accent-soft:#1a2c44;--ok:#5fc493;--ok-soft:#14301f;--warn:#e3a94f;--warn-soft:#36280f;--bad:#f08a80;--bad-soft:#3a1d1b;
+  --na:#9aa5b2;--na-soft:#212b37;--blue:#7fb2f0;--blue-soft:#1a2c44;--hero-1:#08121f;--hero-2:#122a4b;
+  --m0:#7fb2f0;--m1:#6fcf9b;--m2:#e0a865;--m3:#b39ae0;--m4:#e08aa6;--m5:#7fcbd0;
+  --vs-correct:#97C459;--vs-correct-bg:#27500A;--vs-correct-fg:#C0DD97;--vs-partly:#EF9F27;--vs-partly-bg:#633806;--vs-partly-fg:#FAC775;
+  --vs-incorrect:#F09595;--vs-incorrect-bg:#791F1F;--vs-incorrect-fg:#F7C1C1;--vs-unsupported:#AFA9EC;--vs-unsupported-bg:#3C3489;--vs-unsupported-fg:#CECBF6;
+  --vs-refused:#ED93B1;--vs-refused-bg:#72243E;--vs-refused-fg:#F4C0D1;--vs-account:#85B7EB;--vs-account-bg:#0C447C;--vs-account-fg:#B5D4F4;
+  --vs-data:#5DCAA5;--vs-data-bg:#085041;--vs-data-fg:#9FE1CB;--vs-na:#888780;--vs-na-bg:#444441;--vs-na-fg:#D3D1C7;
+  --shadow:0 1px 2px rgb(0 0 0 / .3);--shadow-hover:0 4px 14px rgb(0 0 0 / .35)}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0c121a;--surface:#141c26;--surface-2:#18212d;--ink:#e7edf4;--ink-2:#c3cdd9;--muted:#93a1b2;--line:#253141;--line-strong:#324154;--soft:#1b2532;
+  --accent:#7fb2f0;--accent-soft:#1a2c44;--ok:#5fc493;--ok-soft:#14301f;--warn:#e3a94f;--warn-soft:#36280f;--bad:#f08a80;--bad-soft:#3a1d1b;
+  --na:#9aa5b2;--na-soft:#212b37;--blue:#7fb2f0;--blue-soft:#1a2c44;--hero-1:#08121f;--hero-2:#122a4b;
+  --m0:#7fb2f0;--m1:#6fcf9b;--m2:#e0a865;--m3:#b39ae0;--m4:#e08aa6;--m5:#7fcbd0;
+  --vs-correct:#97C459;--vs-correct-bg:#27500A;--vs-correct-fg:#C0DD97;--vs-partly:#EF9F27;--vs-partly-bg:#633806;--vs-partly-fg:#FAC775;
+  --vs-incorrect:#F09595;--vs-incorrect-bg:#791F1F;--vs-incorrect-fg:#F7C1C1;--vs-unsupported:#AFA9EC;--vs-unsupported-bg:#3C3489;--vs-unsupported-fg:#CECBF6;
+  --vs-refused:#ED93B1;--vs-refused-bg:#72243E;--vs-refused-fg:#F4C0D1;--vs-account:#85B7EB;--vs-account-bg:#0C447C;--vs-account-fg:#B5D4F4;
+  --vs-data:#5DCAA5;--vs-data-bg:#085041;--vs-data-fg:#9FE1CB;--vs-na:#888780;--vs-na-bg:#444441;--vs-na-fg:#D3D1C7;
+  --shadow:0 1px 2px rgb(0 0 0 / .3);--shadow-hover:0 4px 14px rgb(0 0 0 / .35)}
+
+/* ── base ──────────────────────────────────────────────────────────────────── */
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.55;margin:0;overflow-x:clip;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:24px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.015em;color:var(--ink)}
+h1{font-size:30px;font-weight:700;line-height:1.2}h2{font-size:20px;font-weight:650}h3{font-size:15.5px;font-weight:600}
+p{margin:0;max-width:78ch}.muted{color:var(--muted)}.mono{font-family:var(--f-mono);font-size:12.5px}.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.tab,section{display:flex;flex-direction:column;gap:16px}.tab{gap:28px}.sec-head{display:flex;flex-direction:column;gap:6px}
+.sec-head p{font-size:14px}
+
+/* ── header band ───────────────────────────────────────────────────────────── */
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgb(79 142 247 / .28),transparent 60%),linear-gradient(135deg,var(--hero-1),var(--hero-2));color:#fff}
+.hero .wrap{padding-block:12px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:var(--hero-muted);margin-bottom:2px}
+.brand .logo{width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#4f8ef7,#22b8a0);display:inline-grid;place-items:center;color:#fff;font-size:11px;font-weight:800;letter-spacing:-.04em}
+.brand .kind{margin-left:auto;padding:3px 10px;border:1px solid rgb(255 255 255 / .22);border-radius:999px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#dbe5f2}
+.hero h1{color:#fff;font-size:22px;line-height:1.25}
+.hero .lede{color:var(--hero-muted);font-size:13.5px;line-height:1.5;max-width:none}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.meta>span{display:inline-flex;gap:6px;align-items:baseline;background:rgb(255 255 255 / .07);border:1px solid rgb(255 255 255 / .14);border-radius:7px;padding:3px 9px;font-size:12px;color:var(--hero-muted)}
+.meta b{color:#fff;font-weight:600}.meta .mono{font-size:12px}
+.meta>span.warnchip{background:rgb(245 166 35 / .16);border-color:rgb(245 166 35 / .45);color:#ffd99a}.meta>span.warnchip b{color:#ffd99a}
+
+/* ── sticky tab bar ────────────────────────────────────────────────────────── */
+.tabbar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgb(16 24 40 / .04)}
+.tabs{display:flex;flex-wrap:nowrap;gap:0;overflow-x:auto;scrollbar-width:thin}
+.tabs button{font:inherit;font-size:13.5px;font-weight:500;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;padding:13px 9px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:color .12s,border-color .12s}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tabs .c{font-size:11px;font-weight:600;color:var(--muted);background:var(--soft);border-radius:999px;padding:1px 7px;line-height:1.5}
+.tabs button[aria-selected="true"] .c{background:var(--accent-soft);color:var(--accent)}
+button:focus-visible,summary:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main.page{padding-block:28px 48px;display:flex;flex-direction:column;gap:28px}
+
+/* ── surfaces ──────────────────────────────────────────────────────────────── */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.panel.note{border-left:4px solid var(--warn);background:var(--warn-soft)}
+.bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--soft);gap:2px}.bar i{display:block;height:100%}
+.bar .na{background:var(--na)}.dot.na{background:var(--na)}
+.bar .y{background:var(--ok)}.bar .b{background:var(--blue)}.bar .p{background:var(--warn)}.bar .n{background:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-2)}.legend span{display:inline-flex;align-items:center;gap:6px}
+/* 3.7.3 — status colours by who the result is about: the AI (traffic lights), the CData connector
+   (purple, pink), the test account (blue, teal), nobody (grey). Tokens below; dark values in both dark blocks. */
+.bar .v-correct,.dot.v-correct{background:var(--vs-correct)}.bar .v-partly,.dot.v-partly{background:var(--vs-partly)}.bar .v-incorrect,.dot.v-incorrect{background:var(--vs-incorrect)}
+.bar .v-unsupported,.dot.v-unsupported{background:var(--vs-unsupported)}.bar .v-blocked_connector,.dot.v-blocked_connector{background:var(--vs-refused)}
+.bar .v-blocked_account,.dot.v-blocked_account{background:var(--vs-account)}.bar .v-blocked_data,.dot.v-blocked_data{background:var(--vs-data)}
+.bar .v-not_applicable,.dot.v-not_applicable{background:var(--vs-na)}.bar .v-not_measured,.dot.v-not_measured{background:transparent;box-shadow:inset 0 0 0 1.5px var(--vs-na)}
+.pill.v-correct{background:var(--vs-correct-bg);color:var(--vs-correct-fg)}.pill.v-partly{background:var(--vs-partly-bg);color:var(--vs-partly-fg)}.pill.v-incorrect{background:var(--vs-incorrect-bg);color:var(--vs-incorrect-fg)}
+.pill.v-unsupported{background:var(--vs-unsupported-bg);color:var(--vs-unsupported-fg)}.pill.v-blocked_connector{background:var(--vs-refused-bg);color:var(--vs-refused-fg)}
+.pill.v-blocked_account{background:var(--vs-account-bg);color:var(--vs-account-fg)}.pill.v-blocked_data{background:var(--vs-data-bg);color:var(--vs-data-fg)}
+.pill.v-not_applicable{background:var(--vs-na-bg);color:var(--vs-na-fg)}.pill.v-not_measured{background:transparent;color:var(--vs-na-fg);box-shadow:inset 0 0 0 1px var(--vs-na);border:0;outline:1px dashed var(--vs-na);outline-offset:-1px}
+.legend .grp{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.legend .gl{font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.dot{width:9px;height:9px;border-radius:3px;display:inline-block}.dot.y{background:var(--ok)}.dot.p{background:var(--warn)}.dot.n{background:var(--bad)}.dot.b{background:var(--blue)}
+
+/* ── tables ────────────────────────────────────────────────────────────────── */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);border-bottom-color:var(--line-strong)}
+tbody tr:hover td{background:var(--surface-2)}tr:last-child td{border-bottom:0}
+td.c,th.c{text-align:center}
+
+/* ── badges ────────────────────────────────────────────────────────────────── */
+details.more{margin-top:6px}details.more>summary{cursor:pointer;font-size:13.5px;list-style:none}details.more pre{margin-top:6px}
+.grade{display:inline-block;min-width:40px;text-align:center;font-size:12px;font-weight:650;padding:2px 8px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 22%,transparent)}
+.grade.blue{background:var(--blue-soft);color:var(--blue)}.grade.yellow{background:var(--warn-soft);color:var(--warn)}.grade.red{background:var(--bad-soft);color:var(--bad)}.grade.none{background:var(--na-soft);color:var(--na)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap;line-height:1.55}
+.pill.y{background:var(--ok-soft);color:var(--ok)}.pill.p{background:var(--warn-soft);color:var(--warn)}.pill.n{background:var(--bad-soft);color:var(--bad)}.pill.na{background:var(--na-soft);color:var(--na)}
+.pill.b{background:var(--blue-soft);color:var(--blue)}
+.pill.who{background:var(--surface-2);color:var(--ink-2);font-weight:500;box-shadow:inset 0 0 0 1px var(--line)}
+.pill.src{background:var(--accent-soft);color:var(--accent);font-weight:500;text-decoration:none}a.pill.src:hover{text-decoration:underline}
+.pill.ev-customer,.pill.ev-community{background:var(--ok-soft);color:var(--ok)}.pill.ev-vendor{background:var(--accent-soft);color:var(--accent)}.pill.ev-docs,.pill.ev-inferred{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}.pill.ev-inferred{font-style:italic}
+a.mono.doc{color:inherit;text-decoration:underline dotted;text-underline-offset:2px}a.mono.doc:hover{color:var(--accent)}
+
+/* ── controls ──────────────────────────────────────────────────────────────── */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters button,.filters select{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);border-radius:8px;padding:6px 13px;cursor:pointer}
+.filters button:hover,.filters select:hover{border-color:var(--accent)}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.link{font:inherit;font-size:13.5px;font-weight:500;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:none;align-self:flex-start}
+.link:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── AI journey ────────────────────────────────────────────────────────────── */
+.journey{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.jstep{display:grid;grid-template-columns:24px 1fr;gap:12px;position:relative;padding-bottom:14px;font-size:13.5px}.jstep:last-child{padding-bottom:0}
+.jstep::before{content:"";position:absolute;left:11px;top:24px;bottom:2px;width:2px;background:var(--line)}.jstep:last-child::before{display:none}
+.jmark{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff}
+.jmark.ok{background:var(--ok)}.jmark.err{background:var(--bad)}.jmark.fix{background:var(--warn)}.jmark.info{background:var(--na)}
+.jhead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.jtool{font-family:var(--f-mono);font-size:12.5px;font-weight:500}
+.jkind{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.jtime{font-size:12px;color:var(--muted);margin-left:auto}
+.jwhy{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.jerr{font-size:12.5px;color:var(--bad);white-space:pre-wrap;overflow-wrap:anywhere}
+.jres{font-size:12.5px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+pre{margin:6px 0 2px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;overflow-x:auto;max-width:100%;font-family:var(--f-mono);font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink-2)}
+
+/* ── misc ──────────────────────────────────────────────────────────────────── */
+dl.kv{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:9px 18px;margin:0;font-size:13.5px}dl.kv dt{color:var(--muted)}dl.kv dd{margin:0}
+.empty{color:var(--muted);font-style:italic}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px}
+
+/* metric tooltips: one floating box, positioned in JS so table scroll containers never clip it */
+.tip{text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent);text-underline-offset:3px;cursor:help;border-radius:3px}
+.tip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#tipbox{position:fixed;z-index:50;max-width:320px;background:#0f1b2d;color:#fff;font-size:12.5px;font-weight:400;line-height:1.5;letter-spacing:0;text-transform:none;padding:9px 12px;border-radius:8px;box-shadow:0 8px 24px rgb(0 0 0 / .22);pointer-events:none;opacity:0;transition:opacity .1s}
+#tipbox.on{opacity:1}
+
+@media (max-width:640px){.wrap{padding-inline:16px}.tabs{scrollbar-width:none}.hero h1{font-size:19px}.brand .kind{display:none}dl.kv{grid-template-columns:1fr}}
+/* printing or saving as PDF: the open tab, without the controls */
+@media print{body{background:#fff;font-size:12px}.hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabbar{position:static;box-shadow:none}
+  .tabs button:not([aria-selected="true"]){display:none}.panel,.tbl,.stat,.mcard,.uc,.finding,.persona{box-shadow:none;break-inside:avoid}.filters,#tipbox,.link{display:none}}
+
+/* ── capability report: headline figures, use cases, personas ─────────────── */
+.answer,.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.big{display:flex;align-items:baseline;gap:12px}.big .n{font-family:var(--f-display);font-size:46px;font-weight:750;line-height:1;letter-spacing:-.03em}.big .l{color:var(--muted);font-size:14px}
+.minibar{width:150px;height:6px;margin-top:7px}
+tr.total td{border-top:2px solid var(--line-strong);background:var(--surface-2)}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.stat .v{font-family:var(--f-display);font-size:26px;font-weight:700;letter-spacing:-.02em}.stat .k{font-size:12.5px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;font-size:13.5px}
+.list li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px}.list li:last-child{border-bottom:0;padding-bottom:0}
+/* long monospace values (API paths, ids) wrap inside their cell instead of widening the table */
+td.mono{overflow-wrap:anywhere;font-size:12.5px}th.r,td.r{text-align:right}th.nw,td.nw{white-space:nowrap}
+table.fixed{table-layout:fixed}
+.uc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;box-shadow:var(--shadow);transition:border-color .12s,box-shadow .12s}
+.uc>*{min-width:0}.uc details.more{grid-column:1/-1}.uc .pill.src{white-space:normal;overflow-wrap:anywhere}
+.uc:hover{border-color:var(--line-strong);box-shadow:var(--shadow-hover)}
+.uc-q{font-size:15px;font-weight:500;overflow-wrap:anywhere}.uc-id{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-right:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.metric{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column}.metric b{font-family:var(--f-display);font-size:18px;font-weight:650}.metric span{font-size:12px;color:var(--muted)}
+.hist{display:flex;flex-direction:column;gap:9px}.hrow{display:grid;grid-template-columns:170px 1fr 56px;gap:12px;align-items:center;font-size:13px}
+.htrack{height:8px;background:var(--soft);border-radius:999px;overflow:hidden}.htrack i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.htrack i.y{background:var(--ok)}.htrack i.p{background:var(--warn)}.htrack i.n{background:var(--bad)}
+.personas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.persona{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow)}
+.persona .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.persona .frac{font-family:var(--f-display);font-weight:700;font-size:19px}
+/* Grid and flex items default to min-width:auto and grow to fit their longest unbreakable line, so a long
+   SQL statement, JSON input or error URL spills out of its column. Let every column shrink to its track
+   and wrap its content instead. */
+details.fold>summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:2px}details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h3::before{content:"▸ ";color:var(--accent)}details.fold[open]>summary h3::before{content:"▾ "}
+details.fold[open]>summary{margin-bottom:12px}
+.told{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--ink-2)}.told span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.answer>*,.two>*,.uc>*,.list li>*,.jstep>div,.strip>*,.metrics>*,.personas>*{min-width:0}
+@media (max-width:640px){.big .n{font-size:36px}.hrow{grid-template-columns:110px 1fr 44px}}
+</style></head>
+<body>
+<div id="app"><noscript>This report needs JavaScript to render.</noscript></div>
+<script>
+const DATA = /*__DATA__*/null;
+const esc = x => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const pct = (a,t) => (t ? a/t*100 : 0).toFixed(1)+'%';
+
+/* Plain-language meaning of every metric, shown on hover or keyboard focus. Edit the text here. */
+const HELP = {
+ "score": "Each use case gets 0–100, then they are averaged. The answer is worth 50 (correct 50, partial 25, wrong 0); efficiency 20, robustness 15 and speed and cost 15 are earned only in proportion to the answer, so a wrong answer scores 0. Efficiency and speed are measured against the other runs being compared.",
+ "grades": "Follows the outcome, for use cases the AI could attempt. Blue = correct and smooth (score 85 or more). Yellow = correct with friction, or partly correct. Red = incorrect.",
+ "correct": "Use cases the AI answered right, out of those it could actually attempt with data. Use cases blocked by the account or by missing test data, and capabilities ConnectAI MCP does not offer, are counted separately — never for or against the AI.",
+ "v_correct": "Correct: the answer, and for a change the record itself, were checked against the source and are right.",
+ "v_partly": "Partly correct: part of the answer was correct, or the change was made but the agent told the user something different.",
+ "v_incorrect": "Incorrect: the AI could do the task — the capability exists and there was data — and got it wrong. The owner (AI, usage instructions, metadata, connector error) is shown on each.",
+ "v_unsupported": "Not supported: the use case needs something the source's API offers but CData ConnectAI MCP does not. A connector finding, not an AI failure. Not run.",
+ "v_not_applicable": "Not applicable: it needs something that exists only in the source's own app, not its API. No connector could offer it.",
+ "v_blocked_connector": "Refused by the connector: the capability is listed as supported, but at run time the connector refused the operation (for example a read-only field), and the agent said so. A connector finding, not an AI failure.",
+ "v_blocked_account": "Blocked by the account: the source refused for the test account's plan or rights (for example a feature on a higher plan), and the agent said so. Neither the connector nor the AI is at fault, and the capability is not yet tested.",
+ "v_blocked_data": "Blocked by test data: the test account holds nothing this use case is about, or the record to change did not exist. Any answer would be unverifiable — seed data and run it again.",
+ "v_not_measured": "Not measured: no valid result yet (not run, awaiting judgement, or the test harness refused a call).",
+ "aitested": "The use cases that measure the AI: it could attempt them, with data to check against. Its correct rate and score are computed over these only.",
+ "probes": "Use cases ConnectAI MCP cannot fulfil are still put to the agent once, to see what it does: say plainly it cannot be done (honest), or invent an answer or claim a change (invented). The use case stays Not supported either way.",
+ "judges": "Answers that rows cannot decide are judged by a fixed model; a second, different model judges the same answers independently. The first decides the result; where they disagree the use case is marked, and a person should look there first.",
+ "phrasings": "A use case asked in more than one wording is one business need, counted once. Whether every wording got the same outcome is a robustness signal.",
+ "first": "Correct first time: the answer was correct AND no call failed on the way. A clean journey that ends in a wrong answer does not count.",
+ "evidence": "How strong the proof is that real people want this: customer queries, then real users in the vendor's community, then the vendor's own guidance, then documentation. Inferred use cases (no direct evidence) are shown as such, never as equal.",
+ "tags": "Difficulty (simple, medium, complex) and the interaction pattern the request asks for: retrieve, filter, cross-object, aggregate, multi-step, act, read-decide-act, clarify, or explain a limitation.",
+ "caps": "Everything the source's public API can do, read from its own API description. Sign-in, webhooks and other plumbing are left out.",
+ "exposure": "What the capability actually becomes through CData ConnectAI MCP: the table you query, the table and column you write, or the stored procedure you call. \"— not exposed\" means the API offers the operation and the connector does not.",
+ "realism": "An independent judge, in a fresh context, scored each request 1–5 on whether a real person in that role would actually send those words. Anything below 4 was rewritten or retired before the catalog was frozen, so this is the average of what survived.",
+ "supported": "Supported: you can do this through CData ConnectAI MCP — the CData connector underneath exposes it fully as a table, column or procedure.",
+ "partly": "Partly: only some of it works through CData ConnectAI MCP — for example read but not write, or some fields only.",
+ "notpossible": "Not supported: the source's API can do this, but CData ConnectAI MCP does not offer it. This is a CData gap.",
+ "notapplicable": "Not applicable: this exists only inside the source's own app, not in its API, so no connector could offer it. Not a CData gap.",
+ "ucs": "Real business requests, each carried out end to end by a fresh AI agent that saw only the request and the MCP tools.",
+ "causes": "Who owns each use case that did not end correct: connector (driver or server), usage instructions (what getInstructions failed to tell the agent: catalog, schema, required filters), metadata (the schema contradicts itself: a listed table or column is rejected), AI agent (it guessed wrong or answered a different question), test account (plan or rights), test data (nothing to find, or no record to change), source system (its own API does not offer it), test harness (a call refused before it reached the connector).",
+ "avgcalls": "Average MCP tool calls per use case: discovery plus queries and writes. Fewer is better.",
+ "sourced": "Use cases that cite a real public source (docs, community forum, template gallery) showing people actually ask for this.",
+ "human": "A person rated a random sample of use cases; how often they agreed with the AI judge.",
+ "instr": "The usage instructions CData ConnectAI MCP returns from getInstructions: which catalog and schema to use, which filters a source requires, the SQL dialect. Good instructions prevent failed calls before they happen.",
+ "driver": "Checks of behaviour no business use case reaches: paging, SQL dialect, the driver’s own procedures."
+};
+const T = (label, k) => HELP[k] ? `<span class="tip" tabindex="0" data-tip="${esc(HELP[k])}" aria-label="${esc(String(label).replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' '))}: ${esc(HELP[k])}">${label}</span>` : label;
+(function tipbox(){
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function' || !document.body || typeof document.addEventListener !== 'function') return;
+  const box = document.createElement('div'); box.id = 'tipbox'; box.setAttribute('aria-hidden','true'); document.body.appendChild(box);
+  const show = el => { box.textContent = el.dataset.tip; box.classList.add('on');
+    const r = el.getBoundingClientRect(), b = box.getBoundingClientRect(), m = 8;
+    let x = Math.min(Math.max(m, r.left), innerWidth - b.width - m), y = r.bottom + 6;
+    if (y + b.height > innerHeight - m) y = r.top - b.height - 6;
+    box.style.left = x + 'px'; box.style.top = Math.max(m, y) + 'px'; };
+  const hide = () => box.classList.remove('on');
+  document.addEventListener('mouseover', e => { const t = e.target.closest('.tip'); t ? show(t) : hide(); });
+  document.addEventListener('focusin', e => { const t = e.target.closest('.tip'); t ? show(t) : hide(); });
+  document.addEventListener('focusout', hide); document.addEventListener('scroll', hide, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+})();
+const G = (s,g) => s==null ? '<span class="grade none">—</span>' : `<span class="grade ${g||(s>=85?'blue':s>=60?'yellow':'red')}">${s}</span>`;
+const RES = r => { const c = r==='Worked'?'y':(r==='Partly'||r==='Awaiting judgement'||r==='No test data')?'p':(r==='Not run'||r==='Not checked'||r==='Not applicable')?'na':'n'; return `<span class="pill ${c}">${esc(r)}</span>`; };
+const VL = {correct:'Correct',partly:'Partly correct',incorrect:'Incorrect',unsupported:'Not supported',blocked_connector:'Refused by the connector',blocked_account:'Blocked by the account',blocked_data:'Blocked by test data',not_applicable:'Not applicable',not_measured:'Not measured'};
+const VORD = ['incorrect','partly','blocked_connector','blocked_account','blocked_data','unsupported','not_applicable','not_measured','correct'];
+const DSRC = s => s==='found' ? '<span class="pill who">Data: real records in the account</span>' : s==='seeded' ? '<span class="pill who">Data: created for this test</span>' : s==='mixed' ? '<span class="pill who">Data: found and created</span>' : '';
+const PROBE = p => !p ? '' : p.outcome==='correct' ? `<span class="pill y tip" tabindex="0" data-tip="${esc(HELP.probes)}">Said it can't be done</span>` : p.outcome==='wrong' ? `<span class="pill n tip" tabindex="0" data-tip="${esc(HELP.probes)}">Invented an answer</span>` : p.outcome==='partial' ? `<span class="pill p tip" tabindex="0" data-tip="${esc(HELP.probes)}">Partly honest</span>` : `<span class="pill na">Probe awaiting judge</span>`;
+const VP = v => v ? `<span class="pill v-${v} tip" tabindex="0" data-tip="${esc(HELP['v_'+v]||'')}">${esc(VL[v]||v)}</span>` : '';
+/* the verdict bar: every use case once, in a fixed order, zero-count segments left out */
+const vbar = (v, total) => `<div class="bar" role="img" aria-label="${Object.keys(VL).filter(k=>v[k]).map(k=>`${v[k]} ${VL[k].toLowerCase()}`).join(', ')}">${Object.keys(VL).filter(k=>v[k]).map(k=>`<i class="v-${k}" style="width:${pct(v[k],total)}"></i>`).join('')}</div>`;
+/* the legend is grouped by who the result is about */
+const VGROUPS = [['The AI',['correct','partly','incorrect']],['CData connector',['unsupported','blocked_connector']],['Test account',['blocked_account','blocked_data']],['Nobody',['not_applicable','not_measured']]];
+const vlegend = v => `<div class="legend num" style="flex-direction:column;align-items:flex-start;gap:6px">${VGROUPS.filter(([,ks])=>ks.some(k=>v[k])).map(([g,ks])=>`<div class="grp"><span class="gl">${g}</span>${ks.filter(k=>v[k]).map(k=>`<span><span class="dot v-${k}"></span><b>${v[k]}</b>&nbsp;${T(VL[k].toLowerCase(),'v_'+k)}</span>`).join('')}</div>`).join('')}</div>`;
+const ST = s => s==='y'?'<span class="pill y">Supported</span>':s==='p'?'<span class="pill p">Partly supported</span>':s==='n'?'<span class="pill n">Not supported</span>':s==='na'?'<span class="pill na">Not applicable</span>':'<span class="pill na">—</span>';
+const CAUSE = {connector:'connector',instructions:'usage instructions',metadata:'metadata',ai:'AI agent',account:'test account',source:'source system',test_data:'test data',harness:'test harness',unknown:'unknown'};
+const PAT = {bulk_read:'Bulk export',limitation:'Explain a limitation',clarify:'Clarify',read_decide_act:'Read → decide → act',act:'Act (write)',multi_step:'Multi-step',aggregate:'Aggregate',cross_object:'Cross-object',filter:'Filter',retrieve:'Retrieve'};
+const EVL = {customer:'Customer queries',community:'Real users',vendor:'Vendor guidance',docs:'Documentation',inferred:'Inferred'};
+const EVORD = ['customer','community','vendor','docs','inferred'];
+/* 3.9 — a capability assembled from reference pages links the page it was read from */
+const API = k => k && k.doc_url ? `<a class="mono doc" href="${esc(k.doc_url)}" target="_blank" rel="noopener">${esc(k.api)}</a>` : esc(k.api);
+/* every use case card: its evidence level, then the page it cites */
+const EVP = u => `<span class="pill ev-${esc(u.evidence||'inferred')} tip" tabindex="0" data-tip="${esc(HELP.evidence||'')}">Evidence: ${esc(EVL[u.evidence]||EVL.inferred)}</span>`
+  + (u.source ? (u.source.url ? `<a class="pill src" href="${esc(u.source.url)}" target="_blank" rel="noopener">${esc(u.source.title||u.source.kind)}</a>` : `<span class="pill src">${esc(u.source.title||u.source.kind)}</span>`) : '');
+const EVCOUNT = list => { const c = {}; for (const u of list) { const k = u.evidence||'inferred'; c[k] = (c[k]||0) + 1; } return c; };
+const EVLINE = list => { const c = EVCOUNT(list); const ks = EVORD.filter(k=>c[k]); return ks.length ? `<p class="muted" style="font-size:13.5px">${T('By evidence','evidence')}: ${ks.map(k=>`${c[k]} ${esc(EVL[k].toLowerCase())}`).join(' · ')}.</p>` : ''; };
+/* sort and evidence filter of a use case list; '' keeps the report's own order */
+const UCSORT = [['','As listed'],['evidence','Evidence, strongest first'],['area','Business area'],['id','ID']];
+const sortUc = (list, by) => { if (!by) return list; const at = new Map(list.map((u,i)=>[u,i]));
+  const cmp = by==='evidence' ? (a,b)=>EVORD.indexOf(a.evidence||'inferred')-EVORD.indexOf(b.evidence||'inferred') : by==='area' ? (a,b)=>String(a.area||'~').localeCompare(String(b.area||'~')) : (a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true});
+  return [...list].sort((a,b)=>cmp(a,b)||at.get(a)-at.get(b)); };
+const evFilter = (list, ev) => ev ? list.filter(u=>(u.evidence||'inferred')===ev) : list;
+const ucControls = (all, sort, ev, ids) => { const c = EVCOUNT(all);
+  return `<label class="muted" for="${ids[0]}" style="font-size:13px;margin-left:8px">Evidence</label><select id="${ids[0]}"><option value="">All evidence</option>${EVORD.filter(k=>c[k]).map(k=>`<option value="${k}" ${k===ev?'selected':''}>${esc(EVL[k])} (${c[k]})</option>`).join('')}</select>
+    <label class="muted" for="${ids[1]}" style="font-size:13px;margin-left:8px">Sort</label><select id="${ids[1]}">${UCSORT.map(([k,l])=>`<option value="${k}" ${k===sort?'selected':''}>${l}</option>`).join('')}</select>`; };
+/* 3.9 — no human figure because the review was skipped at freeze: say so plainly */
+const HOFF = q => !q || q.human || !q.human_skipped ? '' : q.human_skipped.by==='config' ? 'Not reviewed — human review is off (config.catalog.human_review)' : 'Not reviewed — human review was skipped when the catalog was frozen';
+/* 3.9 — the orchestrator that ran, beside the one suggested (orchestrator-advice.mjs); absent → no row */
+const ORCH = () => { const o = D.run && D.run.orchestrator; if (!o || !o.actual) return '';
+  return `<dt>Orchestrator</dt><dd>${esc(o.actual)}${o.suggested?` <span class="muted">(suggested ${esc(o.suggested)}${(o.reasons||[]).length?`, ${esc(o.reasons.join('; '))}`:''})</span>`:''}</dd>`; };
+/* 3.9 — a list not read from the vendor's own API description says so */
+const PROV = () => { const s = D.run && D.run.capability_source; if (s && s.unverified) return `${UNVNOTE}.`; if (!s || !s.kind || s.kind==='spec') return '';
+  const n = s.pages, what = s.kind==='reference_docs' ? `${n??'the'} reference page${n===1?'':'s'}` : s.kind==='sdk' ? `the official SDK${n?` (${n} page${n===1?'':'s'})`:''}` : s.kind==='postman' ? 'a Postman collection' : esc(s.kind);
+  return `API list assembled from ${what}${s.assembled&&s.assembled.fetcher?` (read with ${esc(s.assembled.fetcher.replace(/_/g,' '))})`:''}, not read from a published API description. Each capability links the page it was read from.`; };
+/* 3.9.2 — a list assembled without evidence (lib/api-provenance.mjs): every number below rests on it */
+const UNVNOTE = 'API list assembled without evidence — rebuild with api-from-docs';
+const UNV = () => { const s = D.run && D.run.capability_source; return s && s.unverified ? s.unverified : null; };
+const UNVCHIP = () => UNV() ? `<span class="warnchip"><b>API list unverified</b></span>` : '';
+const UNVBANNER = () => { const u = UNV(); if (!u) return '';
+  return `<div class="panel note" role="note"><span><b>${UNVNOTE}.</b> The capability list was not read from a published API description and its operations carry no page or quoted line, so the capability counts and gaps below rest on an unchecked list.${(u.reasons||[]).length?` Why: ${esc(u.reasons.join('; '))}.`:''}${u.kept?` Kept knowingly: ${esc(u.kept.why||'')}.`:''}</span></div>`; };
+const D = DATA;
+const app = document.getElementById('app');
+
+function header(){
+  const r = D.run;
+  if (D.analysis) return `<header class="hero"><div class="wrap"><div class="brand"><span class="logo" aria-hidden="true">QA</span><span>CData Connect AI · Connector QA</span><span class="kind">Analysis report</span></div>
+  <h1>What should work through CData ConnectAI MCP for ${esc(D.connector)}?</h1>
+  <p class="lede">Research only: every capability in ${esc(D.connector)}'s API checked against what CData ConnectAI MCP offers, and the real business use cases found for it. No agent has run them yet, so each use case shows an outlook read from the capabilities it needs and the test account, not a result.</p>
+  <div class="meta"><span>Connector <b>${esc(D.connector)}</b></span><span>Researched <b>${esc(String(r.date||'—'))}</b></span><span>Use case catalog <b>${r.catalog_version!=null?'v'+esc(r.catalog_version):'—'}</b></span>${D.scope?`<span>Business areas <b>${D.scope.researched} of ${D.scope.total_areas} researched</b></span>`:''}<span class="warnchip"><b>Not run yet</b></span>${UNVCHIP()}</div></div></header>`;
+  return `<header class="hero"><div class="wrap"><div class="brand"><span class="logo" aria-hidden="true">QA</span><span>CData Connect AI · Connector QA</span><span class="kind">Capability report</span></div>
+  <h1>Can you do through CData ConnectAI MCP what ${esc(D.connector)} can do?</h1>
+  <p class="lede">Every capability in ${esc(D.connector)}'s API, checked against what CData ConnectAI MCP offers (the CData connector underneath, reached through Connect AI's MCP server), and every real business use case carried out end to end by an AI agent using only that MCP server.</p>
+  <div class="meta"><span>Connector <b>${esc(D.connector)}</b></span><span>Run <b class="mono">${esc(r.id)}</b></span><span>Date <b>${esc(r.date)}</b></span>
+  <span>Agent used: <b>${esc(r.model)}</b></span><span>Use case catalog <b>${r.catalog_version!=null?'v'+esc(r.catalog_version):'—'}</b></span>${D.scope?`<span>Business areas <b>${D.scope.researched} of ${D.scope.total_areas} researched</b></span>`:''}${r.complete?'':`<span class="warnchip"><b>${D.scope?'Results missing for some use cases':'Incomplete run'}</b></span>`}${UNVCHIP()}</div></div></header>`;
+}
+/* A partial report must say what it covers: capability counts are for the whole API (read from the
+ * vendor's description), use case results only for the areas researched and run so far. */
+function scopeBanner(){
+  if (D.analysis) return `<div class="panel note" role="note"><span><b>Analysis only.</b> Nothing here was run. An outlook is a forecast from the capability list${D.analysis.account_probed?' and the account probe':''}; a run can still find the connector refusing something listed as supported, or an AI mistake. Run the use cases to measure them.${D.analysis.account_probed?'':' The test account was not probed, so no use case is marked as blocked by it.'}</span></div>`;
+  const s = D.scope; if(!s || s.complete) return '';
+  const missing = s.areas.filter(a=>a.research==='frozen'&&a.missing);
+  return `<div class="panel note" role="note"><span><b>Partial coverage.</b> Use case results cover ${s.with_results} of ${s.total_areas} business area${s.total_areas===1?'':'s'}; there is no connector-wide use case figure until every area is researched and run.
+    ${s.not_researched.length?` Not yet researched: ${esc(s.not_researched.join(', '))}.`:''}${missing.length?` Researched but not fully run: ${esc(missing.map(a=>`${a.name} (${a.missing} left${a.stale?`, ${a.stale} stale`:''})`).join(', '))}.`:''} The capability counts below are for ${esc(D.connector)}'s whole API.</span></div>`;
+}
+const TABS = D && D.analysis ? [['summary','Summary'],['usecases','Use cases',()=>D.analysis.use_cases.length],['caps','Capabilities',()=>D.caps.total],['gaps','Gaps vs API',()=>D.gaps.length],...(D.reference?[['vendor','Vendor MCP']]:[]),['areas','Business areas',()=>D.areas.length],['personas','Personas',()=>(D.analysis.personas||[]).length],['quality','Use case quality'],['run','Research details']] : [['summary','Summary'],['usecases','Use cases',()=>D.use_cases.length],['caps','Capabilities',()=>D.caps.total],['gaps','Gaps vs API',()=>D.gaps.length],...(D&&D.reference?[['vendor','Vendor MCP']]:[]),['areas','Business areas',()=>D.areas.length],
+  ['friction','Friction',()=>D.friction.length],['fix','Fix list',()=>D.fix_list.length],['personas','Personas',()=>D.personas.length],['driver','Driver checks',()=>D.driver.length],['quality','Use case quality'],['failed','Failed queries',()=>(D.failed_calls||[]).length],['run','Run details']];
+function tabs(){ return `<div class="tabbar"><div class="wrap"><nav class="tabs" role="tablist" aria-label="Report sections">${TABS.map(([id,l,c],i)=>`<button type="button" role="tab" id="t-${id}" aria-selected="${i===0}">${l}${c?`<span class="c">${c()}</span>`:''}</button>`).join('')}</nav></div></div>`; }
+
+function summary(){
+  if (D.analysis) return aSummary();
+  const c = D.caps, u = D.ucs;
+  const ap = c.total;
+  const topGaps = D.gaps.filter(g=>g.blocked).slice(0,3), topFr = D.friction.slice(0,3);
+  return `<div class="answer">
+    <div class="panel"><span class="eyebrow">${esc(D.connector)} capabilities</span>
+      <div class="big"><span class="n num">${ap}</span><span class="l">${T(`things ${esc(D.connector)}'s API can do`,'caps')}</span></div>
+      <div class="bar" role="img" aria-label="${c.supported} supported, ${c.partly} partly, ${c.not_exposed} not supported, ${c.product_only} not applicable"><i class="y" style="width:${pct(c.supported,ap)}"></i><i class="p" style="width:${pct(c.partly,ap)}"></i><i class="n" style="width:${pct(c.not_exposed,ap)}"></i><i class="na" style="width:${pct(c.product_only,ap)}"></i></div>
+      <div class="legend num"><span><span class="dot y"></span><b>${c.supported}</b>&nbsp;${T('supported','supported')}</span><span><span class="dot p"></span><b>${c.partly}</b>&nbsp;${T('partly supported','partly')}</span><span><span class="dot n"></span><b>${c.not_exposed}</b>&nbsp;${T('not supported','notpossible')}</span><span><span class="dot na"></span><b>${c.product_only}</b>&nbsp;${T('not applicable','notapplicable')}</span></div>
+      <p class="muted" style="font-size:13.5px">One capability is one operation ${esc(D.connector)}'s API documents — <span class="mono">Query Invoice</span>, <span class="mono">Create Bill</span> — which CData ConnectAI MCP turns into a table to query, a column to write, or a procedure to call. <button type="button" class="link" data-go="caps">See all ${ap} and what each becomes</button><br>Not supported is a CData gap: the API offers it, CData ConnectAI MCP does not. Not applicable is not: it exists only in ${esc(D.connector)}'s own app.${c.not_applicable?` ${c.not_applicable} API operations (sign-in, webhooks…) are not data capabilities and are left out.`:''}${PROV()?` <b>${PROV()}</b>`:''}</p></div>
+    <div class="panel"><span class="eyebrow">Real business use cases</span>
+      <div class="big"><span class="n num">${u.total}</span><span class="l">${T('business use cases, each counted once','ucs')}</span></div>
+      ${u.verdicts?vbar(u.verdicts,u.total)+vlegend(u.verdicts):''}${EVLINE(D.use_cases)}
+      <p class="muted" style="font-size:13.5px">${T('The AI could be tested on','aitested')} <b>${u.ai_tested??'—'}</b> of ${u.total}${u.ai_tested?`: ${u.verdicts.correct} ${T('correct','correct')} (${u.ai_correct_pct}%) · ${T('average score','score')} ${u.ai_score??'—'} / 100 · ${T('correct first time','first')} ${u.first_attempt_pct??'—'}%`:''}.${(u.incorrect_by||[]).length?` Incorrect or partly correct, by owner: ${u.incorrect_by.map(([k,n])=>`${esc(/^AI/.test(k)?k:k.toLowerCase())} ${n}`).join(' · ')}.`:''}${Object.values(u.causes||{}).some(Boolean)?` ${T('Everything not correct, by owner','causes')}: ${Object.entries(u.causes).filter(([,n])=>n).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`${esc(CAUSE[k]||k)} ${n}`).join(' · ')}.`:''}${u.limitation?.n?` ${T('Asked for what ConnectAI MCP cannot do','probes')}: ${u.limitation.honest} of ${u.limitation.n} said so plainly${u.limitation.invented?`, <b>${u.limitation.invented} invented an answer</b>`:''}.`:''}${u.phrased?` ${T(`${u.phrased} asked in more than one wording`,'phrasings')}${u.phrasings_disagree?`, ${u.phrasings_disagree} with different outcomes`:', same outcome every time'}.`:''}</p>
+      ${u.total && u.ai_tested!=null && u.ai_tested < u.total/2 ? `<p class="note" role="note" style="font-size:13.5px;margin-top:6px"><b>Most use cases could not test the AI.</b> Of the other ${u.total-u.ai_tested}: ${['unsupported','not_applicable','blocked_connector','blocked_account','blocked_data','not_measured'].filter(k=>u.verdicts[k]).map(k=>`${u.verdicts[k]} ${VL[k].toLowerCase()}`).join(', ')}. Read the AI figures as indicative only; a test account with this area's features and data would measure it.</p>`:''}</div></div>
+  ${refPanel()}
+  <div class="strip">
+    <div class="stat"><span class="v num">${u.avg_calls??'—'}</span><span class="k">${T('average tool calls per use case','avgcalls')}</span></div>
+    <div class="stat"><span class="v num">${D.quality.sourced_pct!=null?D.quality.sourced_pct+'%':'—'}</span><span class="k">${T('use cases backed by a real source','sourced')}</span></div>
+    <div class="stat"><span class="v num">${D.quality.human?`${D.quality.human.agree} / ${D.quality.human.n}`:'Not reviewed'}</span><span class="k">${D.quality.human?T('human reviewer agreed with the judge','human'):HOFF(D.quality)?esc(HOFF(D.quality).replace(/^Not reviewed — /,'')):T('use cases not yet validated by a person','human')}</span></div>
+    ${D.judges?`<div class="stat"><span class="v num">${D.judges.agree} / ${D.judges.n}</span><span class="k">${T('judged answers where both judges agreed','judges')}</span></div>`:''}
+    <div class="stat"><span class="v num">${D.driver.filter(d=>d.ok).length} / ${D.driver.length}</span><span class="k">${T('driver checks passed','driver')}</span></div></div>
+  ${instrPanel()}
+  <div class="two">
+    <div class="panel"><h3>Biggest gaps vs the API</h3>${topGaps.length?`<ul class="list num">${topGaps.map(g=>`<li><span>${esc(g.label)}</span><span class="pill ${g.bucket}">${g.blocked} blocked</span></li>`).join('')}</ul>`:'<p class="empty">No capability gap blocks a use case.</p>'}<button type="button" class="link" data-go="gaps">See all ${D.gaps.length} gaps vs the API</button></div>
+    <div class="panel"><h3>Biggest friction</h3>${topFr.length?`<ul class="list num">${topFr.map(f=>`<li><span>${esc(f.label)}<br><span class="muted" style="font-size:12.5px">Owner: ${esc(f.cause)}</span></span><span class="pill p">${f.tests} tests</span></li>`).join('')}</ul>`:'<p class="empty">No failed calls.</p>'}<button type="button" class="link" data-go="friction">See all friction</button></div></div>`;
+}
+
+/* What the usage instructions did and did not do for the agents */
+function instrPanel(){
+  const I = D.instructions; if(!I || !I.journeys) return '';
+  const kind = I.generic==null ? '<span class="pill na">not read by any agent</span>' : I.generic ? '<span class="pill p">Generic — not specific to this source</span>' : '<span class="pill y">Specific to this source</span>';
+  return `<div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h3>${T('Usage instructions','instr')}</h3>${kind}</div>
+    <div class="strip num"><div class="stat"><span class="v">${I.read_first_pct??'—'}%</span><span class="k">of journeys read them first</span></div>
+    <div class="stat"><span class="v">${I.discovery_before_first_query??'—'}</span><span class="k">discovery calls before the first query (${I.heavy_discovery_pct??'—'}% of journeys needed 5 or more)</span></div>
+    <div class="stat"><span class="v">${I.failed_calls}</span><span class="k">failed calls charged to the instructions</span></div><div class="stat"><span class="v">${I.tests_hit}</span><span class="k">use cases affected</span></div></div>
+    ${(I.topics||[]).length?`<div class="tbl"><table><thead><tr><th>What the instructions should say</th><th>Suggested line</th><th>Owner today</th><th class="r">Failed calls</th><th class="r">Use cases</th></tr></thead><tbody>
+      ${I.topics.map(t=>`<tr><td><b>${esc(t.label)}</b></td><td>${esc(t.line)}</td><td>${t.charged?'<span class="pill p">Usage instructions</span>':'<span class="pill who">Other owner, instructions would help</span>'}</td><td class="r num">${t.calls}</td><td class="r num">${t.tests}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">No failed call that better instructions would have prevented.</p>'}
+    ${I.sample?`<details><summary class="link">What the agents were told</summary><pre>${esc(I.sample)}</pre></details>`:''}</div>`;
+}
+let ucFilter = 'all', ucArea = '', ucPersona = '', ucSort = '', ucEv = '';
+function ucCard(u){
+  return `<div class="uc"><span class="uc-q"><span class="uc-id">${esc(u.id)}</span>"${esc(u.request)}"</span>
+    <button type="button" class="link" data-uc="${esc(u.id)}">Open full detail →</button>
+    <span class="tags">${VP(u.verdict)}${PROBE(u.probe)}${u.verdict&&['correct','partly','incorrect'].includes(u.verdict)?G(u.score,u.grade):''}${u.phrasings>1?`<span class="pill who">${u.phrasings} wordings${u.phrasings_agree===false?' · outcomes differ':''}</span>`:''}${u.persona?`<span class="pill who">${esc(u.persona)}</span>`:''}${u.area?`<span class="pill who">${esc(u.area)}</span>`:''}${u.kind?`<span class="pill who">${esc(u.kind)}</span>`:''}${u.difficulty?`<span class="pill who">${esc(u.difficulty)}</span>`:''}${u.pattern?`<span class="pill who">${esc(PAT[u.pattern]||u.pattern)}</span>`:''}${EVP(u)}${u.cause?`<span class="pill who">Cause: ${esc(CAUSE[u.cause]||u.cause)}</span>`:''}${u.metrics?`<span class="pill who num">${u.metrics.calls} calls · ${u.metrics.failed} failed</span>`:''}</span></div>`;
+}
+function useCases(){
+  if (D.analysis) return aUseCases();
+  const areas = [...new Set(D.use_cases.map(u=>u.area).filter(Boolean))].sort();
+  const ucPersonas = [...new Set(D.use_cases.map(u=>u.persona).filter(Boolean))].sort();
+  const vi = v => { const i = VORD.indexOf(v); return i < 0 ? VORD.length : i; };
+  const list = sortUc(evFilter(D.use_cases.filter(u => (ucFilter==='all' || u.verdict===ucFilter) && (!ucArea||u.area===ucArea) && (!ucPersona||u.persona===ucPersona))
+    .sort((a,b)=>vi(a.verdict)-vi(b.verdict) || (a.score??101)-(b.score??101)), ucEv), ucSort);
+  const vc = D.ucs.verdicts || {};
+  return `<div class="sec-head"><h2>Use cases</h2><p class="muted">Each is a real request from a real source, carried out by a fresh AI agent that saw only the request and the MCP tools. AI mistakes first, then what blocked the rest. Open one to see its full journey. ${T('How scores are coloured','grades')}.</p></div>
+  <div class="filters" role="group" aria-label="Filter use cases">${[['all','All',D.use_cases.length],...Object.keys(VL).filter(k=>vc[k]).map(k=>[k,VL[k],vc[k]])].map(([k,l,n])=>`<button type="button" data-f="${k}" aria-pressed="${ucFilter===k}">${l} <span class="muted num">${n}</span></button>`).join('')}
+    <label class="muted" for="area-filter" style="font-size:13px;margin-left:8px">Area</label><select id="area-filter"><option value="">All areas</option>${areas.map(a=>`<option ${a===ucArea?'selected':''}>${esc(a)}</option>`).join('')}</select>
+    <label class="muted" for="persona-filter" style="font-size:13px;margin-left:8px">Persona</label><select id="persona-filter"><option value="">All personas</option>${ucPersonas.map(x=>`<option ${x===ucPersona?'selected':''}>${esc(x)}</option>`).join('')}</select>
+    ${ucControls(D.use_cases, ucSort, ucEv, ['uc-ev','uc-sort'])}
+    <span class="muted num" style="font-size:13px">${list.length} shown</span></div>
+  <div class="tab" style="gap:10px">${list.map(ucCard).join('') || '<p class="empty">No use case matches.</p>'}</div>`;
+}
+function stepHtml(s){
+  const mark = s.ok ? (s.recovery_of ? 'fix' : (s.category==='discovery'?'info':'ok')) : 'err';
+  const kind = (s.recovery_of ? `recovery of ${s.recovery_of}` : s.retry_of ? `${s.category} · retry of ${s.retry_of}` : s.category) + (s.turn===2?' · after the reply':'');
+  return `<li class="jstep"><span class="jmark ${mark}">${s.n}</span><div>
+    <div class="jhead"><span class="jtool">${esc(s.tool)}</span><span class="jkind">${esc(kind)}</span>${s.ms!=null?`<span class="jtime num">${(s.ms/1000).toFixed(1)} s</span>`:''}</div>
+    ${s.reason?`<div class="jwhy">Reason given: "${esc(s.reason)}"</div>`:''}
+    ${s.input?`<pre>${esc(s.input)}</pre>`:''}
+    ${s.ok?(s.result?`<div class="jres">Result${s.rows!=null?` · ${s.rows} rows`:''}: ${esc(String(s.result).slice(0,1500))}</div>`:''):`<div class="jerr">Error · ${esc(s.error_class)} · cause: ${esc(CAUSE[s.cause]||s.cause)} · ${esc(s.error)}</div>`}
+  </div></li>`;
+}
+/* 3.7.2 — the use case page answers the reader's own questions in plain words: how do we know the
+ * answer is correct, how many times we asked, why the score, and earlier runs. Queries and codes stay
+ * one click away. */
+const RUN_LABEL = {correct:'Correct',partial:'Partly correct',wrong:'Incorrect',no_test_data:'Blocked by test data',blocked_account:'Blocked by the account',
+  blocked_connector:'Refused by the connector',not_possible:'Not supported',not_run:'Not run',needs_judgement:'Awaiting the judge',not_checked:'Not checked',not_applicable:'Not applicable'};
+const RULE_TEXT = {
+  same_ids:'the answer must name exactly the records our check found',
+  contains:'every record our check found must be in the answer',
+  same_count:'the answer must give the same number our check found',
+  values_within:'the numbers in the answer must match our check, record by record',
+  write_visible:'the change must show in the data afterwards, and nothing else may change',
+  judge:'no query can decide this one, so a fixed AI judge read the answer'};
+const nameOf = r => { if(!r) return ''; const k = Object.keys(r); const pick = k.find(c=>/^(name|title|subject|label|summary)$/i.test(c)) || k.find(c=>/name$/i.test(c)) || k.find(c=>!/id$/i.test(c) && typeof r[c]==='string'); return pick ? String(r[pick]) : String(r[k[0]]??''); };
+const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
+/* the AI's call our check re-ran: the last call whose input is that query */
+const reranStep = u => { const q = String(u.check?.agent_sql||'').replace(/\s+/g,' ').trim(); if(!q) return null; const s = [...(u.steps||[])].reverse().find(x => String(x.input||'').replace(/\s+/g,' ').includes(q.slice(0, 120))); return s ? s.n : null; };
+
+const raw = (d, label) => d ? `<details class="more"><summary class="link">${label}</summary><p class="muted" style="font-size:13px">${esc(d)}</p></details>` : '';
+function howChecked(u){
+  const c = u.check || {}, v = u.verdict, d = c.detail || u.reason || '';
+  const show = [];
+  if (c.reference_sql) show.push(`<details class="more"><summary class="link">Show our check query</summary><pre>${esc(c.reference_sql)}</pre></details>`);
+  const rn = reranStep(u);
+  if (c.agent_sql) show.push(`<details class="more"><summary class="link">Show the AI's query we re-ran${rn?` (call ${rn})`:''}</summary><pre>${esc(c.agent_sql)}</pre><p class="muted" style="font-size:13px">${c.agent_rows_count!=null?`It returned ${plural(c.agent_rows_count,'record')} when we re-ran it, so the records the AI used are real.`:''}</p></details>`);
+  let body;
+  if (u.probe) body = `<p>This request needs something CData ConnectAI MCP does not offer${u.reason?`: ${esc(u.reason.replace(/^Not possible through the connector:\s*/,''))}`:''}. We still asked the AI once, to see whether it would say so plainly or invent an answer.</p><p>${PROBE(u.probe)} ${esc(u.probe.detail||'')}</p>`;
+  else if (v==='unsupported' || v==='not_applicable') body = `<p>Not asked. ${v==='unsupported'?'It needs something the source can do but CData ConnectAI MCP does not offer':'It needs something that exists only inside the source\'s own app'}${d?`: ${esc(String(d).replace(/^Not possible through the connector:\s*/i,'').replace(/\.+$/,''))}`:''}.</p>`;
+  else if (v==='blocked_account') body = `<p>${esc(D.connector)} refused this for the test account's plan or rights, and the AI told the user so. It counts neither for nor against the AI; an account with this feature would test it.</p>${raw(d,'Show what the source returned')}`;
+  else if (v==='blocked_connector') body = `<p>The connector refused the operation or did not answer, and the AI told the user so. This is a connector finding, not an AI mistake.</p>${raw(d,'Show what the connector returned')}`;
+  else if (v==='blocked_data') body = `<p>There was nothing in the test account to check the answer against, so this run measured nothing. Add the records to the test account and run it again.</p>${raw(d,'Show the details')}`;
+  else if (v==='not_measured') body = `<p>Not measured yet: ${esc(d || 'no result recorded')}.</p>`;
+  else if (c.rule==='write_visible') body = `<p>Before the AI started, we read the records this change should touch${c.before_count!=null?` (${plural(c.before_count,'record')})`:''}; after it finished, we read them again${c.reference_count!=null?` (${plural(c.reference_count,'record')})`:''}. The AI never sees these reads. The rule: ${RULE_TEXT.write_visible}.</p><p>What we found: ${esc(d)}.</p>`;
+  else if (c.rule==='judge' || /judge/i.test(d)) body = `<p>No query can decide this one: several answers can be right, or the right move is to ask the user. A fixed AI judge read the request, what was expected, the AI's answer${c.data_count!=null?' and the data in the account':''}, and decided:</p><p>"${esc(d.replace(/^.*judge:\s*/i,''))}"</p>${u.second_judge?`<p class="muted">A second AI judge, from a different model, ${u.second_judge.agree?'agreed':`disagreed (it said ${esc(RUN_LABEL[u.second_judge.outcome]||u.second_judge.outcome)}) — a person should look at this one`}.</p>`:''}`;
+  else {
+    const rows = c.reference_rows || [], n = c.reference_count ?? rows.length;
+    const names = rows.slice(0, 8).map(nameOf).filter(Boolean);
+    body = `<p>After the AI finished, we ran our own check on the same ${esc(D.connector)} data. The AI never sees it. It found ${plural(n,'record')}${names.length?':':'.'}</p>
+      ${names.length?`<ul class="list" style="margin:4px 0 8px">${names.map(x=>`<li><span>${esc(x)}</span></li>`).join('')}${n>names.length?`<li><span class="muted">and ${n-names.length} more</span></li>`:''}</ul>`:''}
+      <p>The rule: ${RULE_TEXT[c.rule]||'the answer is compared with our check'}. What we found: ${esc(d)}.</p>`;
+  }
+  return `<div class="panel"><h3>How do we know the answer is correct?</h3>${body}<p style="margin-top:6px">Result: ${VP(u.verdict)}</p>${show.join('')}</div>`;
+}
+
+function consistency(u){
+  const at = u.attempts || []; if (!at.length) return '';
+  if (['unsupported','not_applicable'].includes(u.verdict) && !u.probe && at.every(t => !t.calls))
+    return `<div class="panel"><h3>How many times did we ask?</h3><p>Not asked. No AI was given this request, because CData ConnectAI MCP cannot do what it needs — the answer would be "not possible" whatever the AI did.</p></div>`;
+  const fails = t => { const f = t.failed_steps || []; if (!f.length) return 'none'; const fixed = f.filter(x=>x.recovered).length, left = f.length - fixed;
+    return [fixed?`${fixed} fixed by the AI`:'', left?`${left} ${f.some(x=>!x.recovered && x.cause==='account')?'refused by the account':f.some(x=>!x.recovered && x.cause==='connector')?'refused by the connector':'not fixed'}`:''].filter(Boolean).join(', ') + ` (call ${f.map(x=>x.n).join(', ')})`; };
+  const often = u.priority==='P1' ? 'Daily questions are asked 3 times, each by a fresh AI, to check it is reliable and not lucky.' : 'Weekly and less frequent questions are asked once; daily ones 3 times, each by a fresh AI.';
+  if (at.length === 1) { const t = at[0];
+    return `<div class="panel"><h3>How many times did we ask?</h3><p>Once. ${often}</p><p class="muted">That run: ${esc(RUN_LABEL[t.outcome]||t.outcome)}${t.score!=null?` · score ${t.score}`:''} · ${plural(t.calls??0,'data request')}${(t.failed_steps||[]).length?`, failed: ${esc(fails(t))}`:', none failed'}.</p></div>`; }
+  const same = new Set(at.map(t=>t.outcome)).size === 1, ok = at.filter(t=>t.outcome==='correct').length;
+  const words = [...new Set(at.map(t=>t.variant||0))];
+  const tally = Object.entries(at.reduce((m,t)=>(m[t.outcome]=(m[t.outcome]||0)+1,m),{})).sort((a,b)=>b[1]-a[1]).map(([o,n])=>`${n} ${(RUN_LABEL[o]||o).toLowerCase()}`).join(', ');
+  const head = same ? `${esc(RUN_LABEL[at[0].outcome]||at[0].outcome)} all ${at.length} times, each by a fresh AI. Same outcome every time.`
+    : ok ? `Correct in ${ok} of ${at.length} runs, each by a fresh AI. The runs did not agree (${tally}) — open the journey to see what differed.`
+    : `The ${at.length} runs, each by a fresh AI, ended differently: ${tally}.`;
+  const wordingOf = t => !t.variant ? 'As written' : `Variant ${t.variant}`;
+  return `<div class="panel"><h3>How many times did we ask?</h3><p>${head} ${words.length>1?`Asked in ${words.length} different wordings.`:''}</p>
+    ${words.length>1?`<p class="muted" style="font-size:13px">As written: "${esc(u.request)}"${(u.variants||[]).map((x,i)=>`<br>Variant ${i+1}: "${esc(x)}"`).join('')}</p>`:''}
+    <div class="tbl"><table class="num" style="min-width:420px"><thead><tr><th>Run</th><th>Wording</th><th>Result</th><th>Score</th><th>Data requests</th><th>Requests that failed</th></tr></thead><tbody>
+    ${at.map((t,i)=>`<tr><td>${i+1}</td><td>${wordingOf(t)}</td><td>${esc(RUN_LABEL[t.outcome]||t.outcome)}</td><td>${t.score??'—'}</td><td>${t.calls??'—'}</td><td>${esc(fails(t))}</td></tr>`).join('')}</tbody></table></div>
+    ${at.some(t=>t.score==null)?`<p class="muted" style="font-size:13px">— = not scored: a run that was blocked or not decided does not test the AI.</p>`:''}</div>`;
+}
+
+function scoreWhy(u){
+  if (u.score==null) return '';
+  const p = u.parts || {}, m = u.metrics || {}, W = D.run.weights || {correctness:50,efficiency:20,robustness:15,speed:15};
+  const row = (txt, k) => `<div class="hrow"><span>${txt}</span><span class="htrack"><i class="${p[k]==null?'na':p[k]/W[k]>=.85?'y':p[k]/W[k]>=.5?'p':'n'}" style="width:${p[k]==null?0:pct(p[k],W[k])}"></i></span><span>${p[k]==null?'—':`${Math.round(p[k])} / ${W[k]}`}</span></div>`;
+  const ans = u.outcome==='correct' ? 'The answer was correct' : u.outcome==='partial' ? 'The answer was partly correct' : 'The answer was incorrect, so the other parts score nothing';
+  const acting = m.acting_calls ?? m.calls;
+  const qc = n => `${n} ${n===1?'query or change':'queries or changes'}`;
+  const eff = p.efficiency!=null && p.efficiency >= W.efficiency*.95 ? `It took the shortest path (${qc(acting??0)})` : `It took ${qc(acting??0)}; the shortest path found for this question took fewer`;
+  const rob = !m.failed ? 'No request failed' : `${plural(m.failed,'request')} failed${m.recoveries?`, ${m.recoveries} fixed by the AI`:''}${m.dead_ends?`, ${plural(m.dead_ends,'dead end')}`:''}${m.repeated?`, ${m.repeated} repeated`:''}`;
+  const spd = p.speed==null ? 'Speed and cost were not measured in this run' : 'Speed and cost against the norm for this kind of task';
+  return `<div class="panel"><h3>Why is the score ${u.score}${u.score<100?' and not 100':''}?</h3><div class="hist num">${row(ans,'correctness')}${row(eff,'efficiency')}${row(rob,'robustness')}${row(spd,'speed')}</div>
+    <p class="muted" style="font-size:13px">${u.grade==='blue'?'85 or more with a correct answer: it worked smoothly.':u.grade==='yellow'&&u.outcome==='correct'?'A correct answer below 85: it worked, with some friction.':u.outcome==='partial'?'Partly correct.':'Incorrect answer.'}${m.time_ms?` · ${(m.time_ms/1000).toFixed(0)} s`:''}${m.tokens?` · ${(m.tokens/1000).toFixed(1)}k tokens`:''}</p></div>`;
+}
+
+function earlierRuns(u){
+  /* shown only when there is history: on a first run it would say nothing */
+  if (!u.history?.length) return '';
+  return `<div class="panel"><h3>Has this question been run before?</h3>${u.history?.length?`<p>The same question in other runs (other dates or other AI models), to see whether the result changed:</p><div class="tbl"><table class="num" style="min-width:360px"><thead><tr><th>Run</th><th>Date</th><th>AI model</th><th>Score</th></tr></thead><tbody>${u.history.map(h=>`<tr><td class="mono">${esc(h.run_id)}</td><td>${esc(h.date||'')}</td><td>${esc(h.model||'')}</td><td>${G(h.score)}</td></tr>`).join('')}</tbody></table></div>`:'<p>No. This is its first run. Later runs (other dates or other AI models) will be listed here.</p>'}</div>`;
+}
+
+function ucDetail(id){
+  const u = D.use_cases.find(x=>x.id===id); if(!u) return '';
+  const m = u.metrics || {};
+  const rn = reranStep(u);
+  return `<button type="button" class="link" data-back="usecases">← All use cases</button>
+  <div class="sec-head"><span class="eyebrow">Use case <span class="mono">${esc(u.id)}</span>${u.area?' · '+esc(u.area):''}</span><h2>"${esc(u.request)}"</h2>
+    <div class="tags">${VP(u.verdict)}${PROBE(u.probe)}${DSRC(u.data_source)}${u.second_judge&&u.second_judge.agree===false?`<span class="pill p tip" tabindex="0" data-tip="${esc(HELP.judges)}">Judges disagree (second: ${esc(u.second_judge.outcome)})</span>`:''}${['correct','partly','incorrect'].includes(u.verdict)?G(u.score,u.grade):''}${u.persona?`<span class="pill who">${esc(u.persona)}</span>`:''}${u.kind?`<span class="pill who">${esc(u.kind)}</span>`:''}${u.priority?`<span class="pill who">${esc(u.priority)}${u.frequency?' · '+esc(u.frequency):''}</span>`:''}</div></div>
+  <div class="two">
+    <div class="panel"><h3>What a good answer does</h3>${u.expected.length?`<ul class="list">${u.expected.map(e=>`<li><span>${esc(e)}</span></li>`).join('')}</ul>`:'<p class="empty">No expected behaviour recorded.</p>'}</div>
+    <div class="panel"><h3>What the AI told the user ${VP(u.verdict)}</h3><div class="told">${u.answer?'"'+esc(u.answer)+'"':'<span class="empty">No answer recorded.</span>'}</div>
+      ${u.clarify?`<div><span class="eyebrow">Two turns</span><p style="font-size:14px;margin-top:4px">The AI first asked: "${esc(u.clarify.answer||'')}"<br>The user replied: "${esc(u.clarify.reply||'')}"<br><span class="muted">Asking: ${esc(u.clarify.detail||u.clarify.outcome||'')}</span></p></div>`:''}
+      ${u.cause&&!['correct','not_measured'].includes(u.verdict)?`<p class="muted" style="font-size:13px">Who should fix this: <b>${esc(CAUSE[u.cause]||u.cause)}</b>${u.review?.reason?` — reviewer: ${esc(u.review.reason)}`:''}</p>`:''}</div></div>
+  /* question and answer, then the evidence for the use case, what the AI did, how we judged it, how consistent it was and the score, and what to fix */
+  <div class="two">
+    <div class="panel"><h3>Why this use case exists</h3><dl class="kv">
+      <dt>Who</dt><dd>${esc(u.persona||'—')}</dd>${u.moment?`<dt>When</dt><dd>${esc(u.moment)}</dd>`:''}<dt>Goal</dt><dd>${esc(u.goal||'—')}</dd>
+      ${u.frequency?`<dt>How often</dt><dd>${esc(u.frequency)}</dd>`:''}<dt>Source</dt><dd>${u.source?esc(`${u.source.kind}: ${u.source.title}`)+(u.source.url?` · <span class="mono">${esc(u.source.url)}</span>`:''):'—'}</dd>
+      <dt>${T('Evidence','evidence')}</dt><dd>${esc(EVL[u.evidence]||'—')}</dd>
+      ${u.difficulty?`<dt>${T('Difficulty','tags')}</dt><dd>${esc(u.difficulty)} · ${esc(PAT[u.pattern]||'')}${(u.tests||[]).length?` · tests ${esc(u.tests.join(', ').replace(/_/g,' '))}`:''}</dd>`:''}
+      <dt>Realism</dt><dd>${u.realism!=null?u.realism+' / 5 (judge)':'—'}${u.human?` · human rated ${esc(u.human.rating)}`:''}</dd></dl></div>
+    <div class="panel"><h3>What it needs from ${esc(D.connector)}</h3><ul class="list">${u.capabilities.map(c=>`<li><span>${esc(c.label)}<br><span class="mono muted">${API(c)}</span></span>${ST(c.status)}</li>`).join('')||'<li class="empty">—</li>'}</ul></div></div>
+  ${u.steps?.length?`<details class="panel fold"><summary><h3>Every call the AI made · ${u.steps.length}${m.failed?`, ${m.failed} failed`:''}</h3><span class="muted">All of these were made by the AI itself, in order. Our own check is under "How do we know the answer is correct?". Select to open.</span></summary><ol class="journey">${u.steps.map(stepHtml).join('')}</ol></details>`:''}
+  ${howChecked(u)}
+  <div class="two">${consistency(u)}${scoreWhy(u)}</div>
+  ${u.fixes?.length?`<div class="panel"><h3>What would make this smoother</h3><ul class="list">${u.fixes.map(f=>`<li><span><b>${esc(f.fix)}</b><br><span class="muted" style="font-size:13px">${esc(f.label)}</span></span></li>`).join('')}</ul></div>`:''}
+  ${earlierRuns(u)}`;
+}
+function gapsTab(){
+  return `<div class="sec-head"><h2>Gaps vs ${esc(D.connector)}'s API: what the API can do that CData ConnectAI MCP can't</h2><p class="muted">Each capability ${esc(D.connector)} offers that CData ConnectAI MCP doesn't fully support, whose gap it is, and how many real use cases it ${D.analysis?'would affect once they are run':'blocks'}.</p></div>
+  ${(D.refused_at_run||[]).length?`<div class="panel note" role="note"><span><b>Supported on paper, refused at run time.</b> The capability list says these work through ConnectAI MCP, but the connector refused them when an agent tried: ${D.refused_at_run.map(r=>`${esc(r.label)} (<button type="button" class="link mono" data-uc="${esc(r.use_case)}">${esc(r.use_case)}</button>${r.why?` — ${esc(r.why)}`:''})`).join(' · ')}. Count them as partly supported until fixed.</span></div>`:''}
+  ${D.gaps.length?(D.reference?gapsWithVendor():`<div class="tbl"><table class="fixed"><colgroup><col style="width:34%"><col style="width:32%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup>
+  <thead><tr><th>Capability</th><th>${esc(D.connector)} API</th><th class="nw">Result</th><th>Whose gap</th><th class="r">${D.analysis?'Use cases that need it':'Use cases blocked'}</th></tr></thead><tbody>${D.gaps.map(g=>`<tr><td>${esc(g.label)}${g.note?`<br><span class="muted" style="font-size:13px">${esc(g.note)}</span>`:''}</td><td class="mono">${API(g)}</td><td class="nw"><span class="pill ${g.bucket}">${g.status==='partly'?'Partly supported':g.status==='product_only'?'Not applicable':'Not supported'}</span></td><td>${esc(g.whose)}</td><td class="num r">${g.blocked}</td></tr>`).join('')}</tbody></table></div>`):'<p class="empty">CData ConnectAI MCP supports every capability in the API.</p>'}`;
+}
+let gVendorOnly = false;
+function gapsWithVendor(){
+  const R = new Map(D.reference.rows.map(r=>[r.id,r]));
+  const list = D.gaps.filter(g => !gVendorOnly || ['covered','partly'].includes(R.get(g.id)?.vendor));
+  const n = D.gaps.filter(g => ['covered','partly'].includes(R.get(g.id)?.vendor)).length;
+  return `<div class="filters" role="group" aria-label="Filter gaps"><button type="button" data-gv="0" aria-pressed="${!gVendorOnly}">All gaps <span class="muted num">${D.gaps.length}</span></button><button type="button" data-gv="1" aria-pressed="${gVendorOnly}">The vendor MCP can do it <span class="muted num">${n}</span></button></div>
+  <div class="tbl"><table class="fixed"><colgroup><col style="width:30%"><col style="width:24%"><col style="width:12%"><col style="width:14%"><col style="width:12%"><col style="width:8%"></colgroup>
+  <thead><tr><th>Capability</th><th>${esc(D.connector)} API</th><th class="nw">Result</th><th>Whose gap</th><th>Vendor MCP</th><th class="r">${D.analysis?'Use cases that need it':'Use cases blocked'}</th></tr></thead><tbody>${list.map(g=>{const r=R.get(g.id);return `<tr><td>${esc(g.label)}${g.note?`<br><span class="muted" style="font-size:13px">${esc(g.note)}</span>`:''}</td><td class="mono">${API(g)}</td><td class="nw"><span class="pill ${g.bucket}">${g.status==='partly'?'Partly supported':g.status==='product_only'?'Not applicable':'Not supported'}</span></td><td>${esc(g.whose)}</td><td>${VS(r?.vendor)}${r?.vendor_tools?.length?`<br><span class="mono muted" style="font-size:12px">${esc(r.vendor_tools.join(', '))}</span>`:''}</td><td class="num r">${g.blocked}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">No gap matches.</td></tr>'}</tbody></table></div>`;
+}
+/* ── every capability, in one browsable place ─────────────────────────────────
+ * The summary counts 223 capabilities and the gaps tab shows the 66 that are missing, but until
+ * now the 157 that DO work were only visible by opening each business area one at a time — so
+ * "capability" stayed an abstract number. This tab lists all of them, says in plain words what
+ * one is, and shows the SQL or procedure each becomes through ConnectAI MCP. */
+let kStatus = 'all', kArea = '', kQuery = '';
+const K_ST = {y:'Supported',p:'Partly supported',n:'Not supported',na:'Not applicable'};
+const capRows = () => D.areas.flatMap(a => a.capabilities.map(c => ({...c, area: a.name, area_id: a.id})));
+function capsTab(){
+  const all = capRows();
+  const R = D.reference ? new Map(D.reference.rows.map(r=>[r.id,r])) : null;
+  const areas = [...new Set(all.map(c=>c.area))].sort();
+  const q = kQuery.trim().toLowerCase();
+  const list = all.filter(c => (kStatus==='all' || c.status===kStatus) && (!kArea || c.area===kArea)
+    && (!q || `${c.label} ${c.api} ${c.exposure||''} ${c.id}`.toLowerCase().includes(q)));
+  const n = s => all.filter(c=>c.status===s).length;
+  /* a worked example makes the number mean something: one real capability, end to end */
+  const eg = all.find(c=>c.status==='y'&&c.exposure) || all.find(c=>c.exposure) || all[0];
+  return `<div class="sec-head"><h2>What ${esc(D.connector)}'s API can do, and how much of it you can reach</h2>
+    <p class="muted">A <b>capability</b> is one operation ${esc(D.connector)}'s own API documents — one thing the product can be asked to do. They are read from ${esc(D.connector)}'s API description, not invented here, so this is the full list of what is theoretically reachable. For each one, this table says whether CData ConnectAI MCP offers it and <b>what it actually becomes</b>: a table to query, a column to write, or a stored procedure to call.</p></div>
+  ${eg?`<div class="panel note" role="note"><span><b>Reading one row.</b> <b>${esc(eg.label)}</b> is the API operation <span class="mono">${esc(eg.api)}</span>. Through CData ConnectAI MCP you reach it as <span class="mono">${esc(eg.exposure)}</span>${eg.needed?`, and ${eg.needed} researched use case${eg.needed===1?'':'s'} need${eg.needed===1?'s':''} it`:''}. A row reading <span class="mono">— not exposed</span> is one the API offers and the connector does not; those are the Gaps tab. The last column counts the researched use cases that need the capability, so a gap with a high count is the one worth fixing first.</span></div>`:''}
+  <div class="filters" role="group" aria-label="Filter capabilities">${[['all','All',all.length],...Object.keys(K_ST).filter(s=>n(s)).map(s=>[s,K_ST[s],n(s)])].map(([k,l,c])=>`<button type="button" data-kf="${k}" aria-pressed="${kStatus===k}">${esc(l)} <span class="muted num">${c}</span></button>`).join('')}
+    <label class="muted" for="k-area" style="font-size:13px;margin-left:8px">Area</label><select id="k-area"><option value="">All areas</option>${areas.map(a=>`<option ${a===kArea?'selected':''}>${esc(a)}</option>`).join('')}</select>
+    <label class="muted" for="k-q" style="font-size:13px;margin-left:8px">Find</label><input id="k-q" type="search" value="${esc(kQuery)}" placeholder="invoice, SELECT, procedure…" style="font:inherit;padding:4px 8px">
+    <span class="muted num" style="font-size:13px">${list.length} shown</span></div>
+  <div class="tbl"><table class="fixed num"><colgroup><col style="width:22%"><col style="width:26%"><col style="width:${R?20:26}%"><col style="width:12%">${R?'<col style="width:12%">':''}<col style="width:8%"></colgroup>
+  <thead><tr><th>Capability</th><th>${esc(D.connector)} API</th><th>${T('Through ConnectAI MCP','exposure')}</th><th class="nw">CData</th>${R?'<th class="nw">Vendor MCP</th>':''}<th class="r">Use cases</th></tr></thead>
+  <tbody>${list.map(c=>{const r=R&&R.get(c.id);return `<tr><td>${esc(c.label)}</td><td class="mono">${API(c)}</td><td class="mono">${c.exposure?esc(c.exposure):'<span class="muted">—</span>'}</td><td class="nw">${ST(c.status)}</td>${R?`<td class="nw">${VS(r&&r.vendor)}${r&&r.vendor_tools&&r.vendor_tools.length?`<br><span class="mono muted" style="font-size:12px">${esc(r.vendor_tools.join(', '))}</span>`:''}</td>`:''}<td class="num r">${c.needed!=null?c.needed:(c.total||0)}</td></tr>`;}).join('')||`<tr><td colspan="${R?6:5}" class="empty">No capability matches.</td></tr>`}</tbody></table></div>`;
+}
+/* ── who the use cases are for, before anything runs ──────────────────────────
+ * The results report builds its Personas tab from execution records, so an analysis report showed
+ * nothing at all here — the persona dimension was researched (every use case names one, and Stage 2
+ * describes each role) but invisible. This builds it from the catalog. */
+function aPersonas(){
+  const P = D.analysis.personas || [], miss = D.analysis.personas_without_use_case || [];
+  const n = P.reduce((a,p)=>a+p.use_cases,0);
+  return `<div class="sec-head"><h2>Who these use cases are for</h2>
+    <p class="muted">Every use case names the role that would really ask it. These are the roles the research found for ${esc(D.connector)}, and how much of the catalog each one owns. Nothing has been run, so this is coverage of the research, not of an AI's performance.</p></div>
+  ${miss.length?`<div class="panel note" role="note"><span><b>Researched but unserved.</b> The persona research names ${miss.map(m=>esc(m)).join(', ')}, and no use case in the researched areas serves ${miss.length===1?'it':'them'}. Either the role does not work in these areas, or it is a research gap worth a fill batch.</span></div>`:''}
+  <div class="tbl"><table class="fixed num"><colgroup><col style="width:24%"><col style="width:10%"><col style="width:22%"><col style="width:20%"><col style="width:12%"><col style="width:12%"></colgroup>
+  <thead><tr><th>Persona</th><th class="r">Use cases</th><th>Business areas</th><th>Difficulty</th><th class="r">That change data</th><th class="r">${T('Realism','realism')}</th></tr></thead>
+  <tbody>${P.map(p=>`<tr><td><b>${esc(p.name)}</b>${p.archetype?`<br><span class="muted" style="font-size:12.5px">${esc(p.archetype)}</span>`:''}</td>
+    <td class="num r">${p.use_cases}<br><span class="muted" style="font-size:12px">${Math.round(100*p.use_cases/n)}%</span></td>
+    <td>${p.areas.map(a=>esc(a)).join(', ')||'<span class="muted">—</span>'}</td>
+    <td class="muted" style="font-size:13px">${Object.entries(p.difficulty).map(([k,v])=>`${v} ${esc(k)}`).join(' · ')||'—'}</td>
+    <td class="num r">${p.writes||0}</td><td class="num r">${p.realism!=null?p.realism+' / 5':'—'}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No persona recorded.</td></tr>'}</tbody></table></div>
+  ${P.some(p=>p.description||p.jobs.length)?`<div class="sec-head" style="margin-top:18px"><h3>What each role is trying to get done</h3><p class="muted">From the Stage 2 persona research. These jobs are what the use cases were written against.</p></div>
+  <div class="tab" style="gap:10px">${P.filter(p=>p.description||p.jobs.length).map(p=>`<div class="panel"><h3>${esc(p.name)}${p.archetype?` <span class="pill who">${esc(p.archetype)}</span>`:''}</h3>${p.description?`<p class="muted" style="font-size:13.5px">${esc(p.description)}</p>`:''}${p.jobs.length?`<ul class="list">${p.jobs.map(j=>`<li><span>${esc(j)}</span></li>`).join('')}</ul>`:''}</div>`).join('')}</div>`:''}`;
+}
+let areaOpen = null;
+function areasTab(){
+  if (D.analysis) return aAreas();
+  if(areaOpen) return areaDetail(areaOpen);
+  return `<div class="sec-head"><h2>By business area</h2><p class="muted">Open an area to see every capability in it, how CData exposes it, its use cases, gaps and friction.</p></div>
+  <div class="tbl"><table class="num"><thead><tr><th>Business area</th><th>Capabilities</th><th>Use cases</th><th>Avg score</th><th>Main issue</th><th></th></tr></thead><tbody>${D.areas.map(a=>{const c=a.caps.y+a.caps.p+a.caps.n+(a.caps.na||0);return `<tr><td><b>${esc(a.name)}</b></td>
+    <td>${a.caps.y} of ${c} supported${a.caps.p?` · ${a.caps.p} partly`:''}${a.caps.n?` · ${a.caps.n} not supported`:''}${a.caps.na?` · ${a.caps.na} not applicable`:''}<div class="bar minibar"><i class="y" style="width:${pct(a.caps.y,c)}"></i><i class="p" style="width:${pct(a.caps.p,c)}"></i><i class="n" style="width:${pct(a.caps.n,c)}"></i></div></td>
+    <td>${!a.ucs.total?'<span class="muted">not researched yet</span>':`${a.ucs.worked} of ${a.ucs.total} correct`}${a.ucs.total&&a.ucs.verdicts?` · ${a.ucs.verdicts.correct+a.ucs.verdicts.partly+a.ucs.verdicts.incorrect} tested the AI`:''}${a.ucs.total&&a.ucs.verdicts?vbar(a.ucs.verdicts,a.ucs.total).replace('class="bar"','class="bar minibar"'):''}</td>
+    <td>${G(a.avg)}</td><td class="muted">${esc(a.issue)}</td><td><button type="button" class="link" data-area="${esc(a.id)}">View&nbsp;details&nbsp;→</button></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function areaDetail(id){
+  const a = D.areas.find(x=>x.id===id); if(!a) return '';
+  const c = a.caps.y+a.caps.p+a.caps.n+(a.caps.na||0);
+  const ucs = D.use_cases.filter(u=>a.use_cases.includes(u.id));
+  return `<button type="button" class="link" data-areaback="1">← All business areas</button>
+  <div class="sec-head"><span class="eyebrow">Business area</span><h2>${esc(a.name)}</h2></div>
+  <div class="strip num"><div class="stat"><span class="v">${a.caps.y} / ${c}</span><span class="k">capabilities supported</span></div><div class="stat"><span class="v">${a.ucs.worked} / ${a.ucs.total}</span><span class="k">use cases correct</span></div><div class="stat"><span class="v">${a.avg??'—'}</span><span class="k">average score</span></div>${a.ucs.verdicts?`<div class="stat"><span class="v">${a.ucs.verdicts.incorrect+a.ucs.verdicts.partly}</span><span class="k">incorrect or partly correct</span></div><div class="stat"><span class="v">${a.ucs.verdicts.unsupported+a.ucs.verdicts.not_applicable}</span><span class="k">not supported or not applicable</span></div><div class="stat"><span class="v">${a.ucs.verdicts.blocked_account+a.ucs.verdicts.blocked_data}</span><span class="k">blocked by the test account</span></div>`:`<div class="stat"><span class="v">${a.ucs.partly+a.ucs.failed}</span><span class="k">incorrect or partly correct</span></div>`}</div>
+  ${a.ucs.verdicts?vbar(a.ucs.verdicts,a.ucs.total)+vlegend(a.ucs.verdicts):''}
+  ${a.personas.length?`<section><h3>Who does this work</h3><div class="filters">${a.personas.map(([p,n])=>`<span class="pill who num">${esc(p)} · ${n} use cases</span>`).join('')}</div></section>`:''}
+  <section><div class="sec-head"><h3>Every capability in this area</h3></div><div class="tbl"><table class="num"><thead><tr><th>Capability</th><th>API</th><th>Offered through ConnectAI MCP as</th><th>Result</th><th>Use cases</th><th>Avg score</th></tr></thead><tbody>${a.capabilities.map(k=>`<tr><td>${esc(k.label)}</td><td class="mono">${API(k)}</td><td class="mono">${esc(k.exposure)}</td><td>${ST(k.status)}</td><td>${k.total?`${k.ok} of ${k.total} worked`:'<span class="muted">no use case</span>'}</td><td>${G(k.avg)}</td></tr>`).join('')}</tbody></table></div></section>
+  <section><div class="sec-head"><h3>Use cases</h3></div><div class="tbl"><table class="num"><thead><tr><th>ID</th><th>Request</th><th>Persona</th><th>Score</th><th>Result</th></tr></thead><tbody>${ucs.map(u=>`<tr><td class="mono"><button type="button" class="link" data-uc="${esc(u.id)}">${esc(u.id)}</button></td><td>"${esc(u.request)}"</td><td>${esc(u.persona||'')}</td><td>${['correct','partly','incorrect'].includes(u.verdict)?G(u.score,u.grade):'<span class="grade none">—</span>'}</td><td>${u.verdict?VP(u.verdict):RES(u.result)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No use cases in this area.</td></tr>'}</tbody></table></div></section>
+  <div class="two"><section class="panel"><h3>Gaps in this area</h3>${a.gaps.length?`<ul class="list num">${a.gaps.map(g=>`<li><span><b>${esc(g.label)}</b><br><span class="muted" style="font-size:13px">${esc(g.whose)}</span></span><span class="pill ${g.bucket}">${g.blocked} blocked</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</section>
+  <section class="panel"><h3>AI friction in this area</h3>${a.friction.length?`<ul class="list num">${a.friction.map(f=>`<li><span><b>${esc(f.label)}</b><br><span class="muted" style="font-size:13px">${esc(f.cause)} · +${f.extra_calls??'?'} calls on average</span></span><span class="pill p">${f.tests} tests</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</section></div>`;
+}
+function frictionTab(){
+  return `<div class="sec-head"><h2>Where the agents struggled</h2><p class="muted">Every failed call in every journey, grouped by what went wrong. A use case can succeed and still appear here: friction is the extra calls and time before the correct answer.</p></div>
+  ${D.friction.length?`<div class="tbl"><table class="num"><thead><tr><th>What went wrong</th><th>Cause</th><th>Tests affected</th><th>Extra calls (avg)</th><th>Extra time (avg)</th><th>Recovered</th><th>Suggested fix</th></tr></thead><tbody>${D.friction.map(f=>`<tr><td>${esc(f.label)}</td><td>${esc(f.cause)}</td><td>${f.tests}</td><td>${f.extra_calls??'—'}</td><td>${f.extra_s!=null?f.extra_s+' s':'—'}</td><td>${f.recovered_pct!=null?f.recovered_pct+'%':'—'}</td><td>${esc(f.fix)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="empty">No failed calls in any journey.</p>'}`;
+}
+function fixTab(){
+  return `<div class="sec-head"><span class="eyebrow">For the dev team</span><h2>What to fix first</h2><p class="muted">Connector and metadata problems, ranked by how many use cases they cost.</p></div>
+  ${D.fix_list.length?`<div class="tbl"><table class="num"><thead><tr><th>#</th><th>Fix</th><th>Owner</th><th>Evidence</th><th>Example</th></tr></thead><tbody>${D.fix_list.map(f=>`<tr><td>${f.rank}</td><td><b>${esc(f.fix)}</b>${f.note?`<br><span class="muted">${esc(f.note)}</span>`:''}</td><td><span class="pill who">${esc(f.owner)}</span></td><td>${esc(f.evidence)}</td><td>${f.example?`<button type="button" class="link mono" data-uc="${esc(f.example)}">${esc(f.example)}</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="empty">Nothing to fix.</p>'}`;
+}
+function personasTab(){
+  return `<div class="sec-head"><h2>By persona</h2><p class="muted">Share of each persona's real use cases that worked end to end through CData ConnectAI MCP.</p></div>
+  <div class="personas num">${D.personas.map(p=>`<div class="persona"><div class="top"><b>${esc(p.name)}</b><span class="frac">${p.ok}/${p.ai_tested??p.total}</span></div>${p.verdicts?vbar(p.verdicts,p.total):`<div class="bar"><i class="y" style="width:${pct(p.ok,p.total)}"></i></div>`}${p.verdicts&&p.ai_tested!=null?`<span class="muted" style="font-size:12.5px">${p.ok} correct of ${p.ai_tested} the AI could attempt · ${p.total} use cases</span>`:''}<span class="muted" style="font-size:12.5px">${esc(p.archetype||'')}${p.archetype?' · ':''}${p.total-p.ok} not fully working</span></div>`).join('')||'<p class="empty">No personas.</p>'}</div>`;
+}
+function driverTab(){
+  const ok = D.driver.filter(d=>d.ok).length;
+  return `<div class="sec-head"><h2>Driver checks</h2><p class="muted">Behaviour no business use case reaches: paging, SQL handling, the driver's own procedures. ${ok} of ${D.driver.length} passed.</p></div>
+  ${D.driver.length?`<div class="tbl"><table><thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead><tbody>${[...D.driver].sort((a,b)=>a.ok-b.ok).map(d=>`<tr><td>${esc(d.label)}</td><td>${RES(d.result)}</td><td class="muted">${esc(d.detail)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="empty">No driver checks in this run.</p>'}`;
+}
+function qualityTab(){
+  const q = D.quality, mx = Math.max(1,...q.sources.map(s=>s[1])), rt = q.realism.five+q.realism.four+q.realism.low || 1;
+  const hist = rows => { const m = Math.max(1, ...rows.map(r=>r[1])); return `<div class="hist num">${rows.map(([k,n])=>`<div class="hrow"><span>${esc(k)}</span><span class="htrack"><i style="width:${(n/m*100).toFixed(0)}%"></i></span><span>${n}</span></div>`).join('')}</div>`; };
+  const ev = q.evidence||[], tg = q.tagged||0;
+  return `<div class="two"><div class="panel"><h3>${T('Evidence strength','evidence')}</h3>${ev.length?hist(ev.map(([l,n])=>[l,n])):'<p class="empty">No catalog.</p>'}
+    <p class="muted" style="font-size:13.5px">Observed behaviour first; an inferred use case is never presented as equal to one people were seen asking.</p></div>
+  <div class="panel"><h3>${T('Difficulty and interaction pattern','tags')}</h3>${tg?hist([...(q.difficulty||[]).map(([d,n])=>[d[0].toUpperCase()+d.slice(1),n]), ...(q.patterns||[])]):'<p class="empty">The catalog is not tagged yet (manage-catalog.mjs tag).</p>'}
+    ${tg?`<p class="muted" style="font-size:13.5px">${tg} use cases tagged. Difficulty first, then patterns.</p>`:''}</div></div>
+  <div class="two"><div class="panel"><h3>Where the use cases came from</h3><div class="hist num">${q.sources.map(([k,v])=>`<div class="hrow"><span>${esc(k.replace(/_/g,' '))}</span><span class="htrack"><i style="width:${(v/mx*100).toFixed(0)}%"></i></span><span>${v}</span></div>`).join('')||'<p class="empty">No catalog.</p>'}</div></div>
+  <div class="panel"><h3>Realism scores</h3><div class="hist num"><div class="hrow"><span>5 — exactly how they ask</span><span class="htrack"><i style="width:${pct(q.realism.five,rt)}"></i></span><span>${q.realism.five}</span></div><div class="hrow"><span>4 — natural</span><span class="htrack"><i style="width:${pct(q.realism.four,rt)}"></i></span><span>${q.realism.four}</span></div><div class="hrow"><span>3 or below</span><span class="htrack"><i style="width:${pct(q.realism.low,rt)}"></i></span><span>${q.realism.low}</span></div></div>
+  <p class="muted" style="font-size:13.5px">${q.human?`A human reviewed ${q.human.n} at random and agreed with the judge on ${q.human.agree}.`:HOFF(q)?esc(HOFF(q))+'.':'No human review recorded for this catalog version.'}</p></div></div>`;
+}
+let fqOwner = 'all', fqClass = '', fqOpen = new Set();
+function failedTab(){
+  const all = D.failed_calls || [];
+  if(!all.length) return `<div class="sec-head"><h2>Failed queries</h2></div><p class="empty">No call failed at the driver in this run.</p>`;
+  const owners = [...new Set(all.map(f=>f.owner))];
+  const classes = [...new Set(all.filter(f=>fqOwner==='all'||f.owner===fqOwner).map(f=>f.label))].sort();
+  const list = all.filter(f=>(fqOwner==='all'||f.owner===fqOwner)&&(!fqClass||f.label===fqClass));
+  const hits = n => all.filter(f=>n==='all'||f.owner===n).reduce((a,f)=>a+f.count,0);
+  return `<div class="sec-head"><h2>Failed queries</h2><p class="muted">Every call the driver answered with an error, across every attempt of every test: the exact input the agent sent, the error the driver returned, and whose problem it is. Identical failures are folded into one row with the tests that hit them. Connector and metadata problems come first.</p></div>
+  <div class="filters" role="group" aria-label="Filter by owner">${['all',...owners].map(o=>`<button type="button" data-fq="${esc(o)}" aria-pressed="${fqOwner===o}">${o==='all'?'All':esc(o)} <span class="num">${hits(o)}</span></button>`).join('')}
+    <label class="muted" for="fq-class" style="font-size:13px;margin-left:8px">Error</label><select id="fq-class"><option value="">All errors</option>${classes.map(c=>`<option ${c===fqClass?'selected':''}>${esc(c)}</option>`).join('')}</select>
+    <span class="muted num" style="font-size:13px">${list.length} distinct · ${list.reduce((a,f)=>a+f.count,0)} calls</span></div>
+  <div class="tbl"><table class="fixed"><colgroup><col style="width:13%"><col style="width:39%"><col style="width:30%"><col style="width:10%"><col style="width:8%"></colgroup>
+  <thead><tr><th>Error · owner</th><th>Query or input sent</th><th>Driver error</th><th>Tests</th><th class="r">Calls</th></tr></thead><tbody>
+  ${list.map((f,i)=>{const id=`${f.tool}|${f.input}|${f.error}`, open=fqOpen.has(id), t=f.tests;
+    return `<tr><td><b>${esc(f.label)}</b><br><span class="pill who">${esc(f.owner)}</span>${f.recovered?`<br><span class="muted" style="font-size:12px">agent recovered</span>`:''}</td>
+    <td><span class="jtool">${esc(f.tool)}</span>${f.input?`<pre>${esc(f.input)}</pre>`:'<span class="muted"> no input</span>'}</td>
+    <td class="jerr">${esc(f.error)||'—'}</td>
+    <td class="mono" style="font-size:12px">${esc((open?t:t.slice(0,3)).join(', '))}${t.length>3?` <button type="button" class="link" data-fqt="${esc(id)}">${open?'less':`+${t.length-3} more`}</button>`:''}</td>
+    <td class="num r">${f.count}</td></tr>`;}).join('')||'<tr><td colspan="5" class="empty">No failure matches.</td></tr>'}</tbody></table></div>`;
+}
+function runTab(){
+  if (D.analysis) return aRun();
+  const r = D.run, fp = r.fingerprint||{};
+  return `<div class="two"><div class="panel"><h3>What produced this run</h3><dl class="kv num"><dt>Run</dt><dd class="mono">${esc(r.id)}</dd><dt>Use case catalog</dt><dd>${r.catalog_version!=null?'v'+esc(r.catalog_version):'—'}</dd>
+    <dt>Capability list</dt><dd>${r.capability_source?esc(`${r.capability_source.title||''} ${r.capability_source.version||''} · read ${String(r.capability_source.read_at||'').slice(0,10)}`):'—'}${PROV()?`<br><span class="muted" style="font-size:13px">${PROV()}</span>`:''}</dd>
+    <dt>Connector build</dt><dd>${esc(fp.connector_build||'—')}</dd><dt>Usage instructions</dt><dd class="mono">${esc(fp.instructions||'—')}</dd><dt>Agent used</dt><dd>${esc(r.model)}</dd>${ORCH()}
+    <dt>Fixed models</dt><dd>${esc(Object.entries(r.fixed_models||{}).filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join(' · ')||'—')}</dd><dt>Skill version</dt><dd>${esc(r.skill_version||'—')}</dd></dl></div>
+  <div class="panel"><h3>Cost, time and reuse</h3><dl class="kv num"><dt>Tool calls</dt><dd>${r.calls.toLocaleString()}</dd><dt>Tokens</dt><dd>${r.tokens?r.tokens.toLocaleString():'not recorded'}</dd><dt>Agent time</dt><dd>${r.time_s?r.time_s+' s':'not recorded'}</dd>
+    <dt>Environment</dt><dd class="mono">${esc(fp.env_key||fp.key||'—')}${fp.test_data?` · test data ${esc(fp.test_data)}`:''}</dd><dt>Reusable in an eval</dt><dd>${D.scope?'Per use case — each result counts while its use case and the environment are unchanged':r.complete?'Yes — with the same catalog, connector build and instructions':'No — the run is incomplete'}</dd></dl></div></div>${(r.runs||[]).length>1?`<div class="panel"><h3>Runs combined in this report</h3><ul class="list num">${r.runs.map(x=>`<li><span class="mono">${esc(x.run_id)}</span><span class="muted">${esc(String(x.finished_at||'').slice(0,10))}</span></li>`).join('')}</ul></div>`:''}${D.test_data?`<div class="panel"><h3>Test data</h3><p class="muted" style="font-size:13.5px">${D.test_data.fixtures} named record(s) the use cases need: ${D.test_data.found} found in the account · ${D.test_data.seeded} created for the tests · ${D.test_data.missing} missing · ${D.test_data.refused} refused by the account.</p>
+    ${(D.test_data.left.seeded.length||D.test_data.left.touched.length)?`<h4 style="margin-top:10px">Records left in the test account</h4><ul class="list num">${D.test_data.left.seeded.map(x=>`<li><span>${esc(x.name||x.describe)} <span class="muted">· ${esc(x.table||'')} · created as test data</span></span><span class="mono">${esc(x.id||'')}</span></li>`).join('')}${D.test_data.left.touched.map(x=>`<li><span>Created or changed by the agent in <button type="button" class="link mono" data-uc="${esc(x.use_case)}">${esc(x.use_case)}</button> (attempt ${x.attempt})</span><span class="mono">${esc(x.ids.join(', '))}</span></li>`).join('')}</ul>`:''}</div>`:''}${D.scope?`<div class="panel"><h3>Coverage by business area</h3><div class="tbl"><table class="num"><thead><tr><th>Area</th><th>Research</th><th>Use cases</th><th>Results</th><th>Stale</th></tr></thead><tbody>${D.scope.areas.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.research==='frozen'?'frozen':x.research==='empty'?'not researched':x.research)}</td><td>${x.use_cases}</td><td>${x.results} / ${x.total}</td><td>${x.stale||''}</td></tr>`).join('')}</tbody></table></div></div>`:''}`;
+}
+/* ---- vendor MCP comparison (3.8): the source's own MCP server beside CData's ---- */
+const BL = {both:'Both',cdata_only:'Only CData ConnectAI MCP',vendor_only:'Only the vendor MCP',neither:'Neither',app_only:"Only in the source's own app",unmapped:'Not compared yet'};
+const BC = {both:'y',cdata_only:'b',vendor_only:'n',neither:'v-not_applicable',app_only:'na',unmapped:'v-not_measured'};
+const BHELP = {both:'Both MCP servers can do it.',cdata_only:"CData ConnectAI MCP can do it; the vendor's own MCP server has no tool for it.",
+  vendor_only:"The vendor's own MCP server has a tool for it; CData ConnectAI MCP does not offer it. A CData gap the vendor has already closed.",
+  neither:"The API offers it, but neither MCP server does.",app_only:"It exists only in the source's own app, with no API. No MCP server could offer it.",unmapped:'Not compared with the vendor MCP yet.'};
+const VS = s => s==='covered'?'<span class="pill y">Covered</span>':s==='partly'?'<span class="pill p">Partly</span>':s==='not_covered'?'<span class="pill n">Not covered</span>':'<span class="pill v-not_measured">Not compared</span>';
+const BP = b => `<span class="pill ${BC[b]} tip" tabindex="0" data-tip="${esc(BHELP[b]||'')}">${esc(BL[b]||b)}</span>`;
+const bbar = (v, total) => `<div class="bar" role="img" aria-label="${Object.keys(BL).filter(k=>v[k]).map(k=>`${v[k]} ${BL[k].replace(/^./,c=>c.toLowerCase())}`).join(', ')}">${Object.keys(BL).filter(k=>v[k]).map(k=>`<i class="${BC[k]}" style="width:${pct(v[k],total)}"></i>`).join('')}</div>`;
+const blegend = v => `<div class="legend num">${Object.keys(BL).filter(k=>v[k]).map(k=>`<span><span class="dot ${BC[k]}"></span><b>${v[k]}</b>&nbsp;${T(BL[k].replace(/^./,c=>c.toLowerCase()),'b_'+k)}</span>`).join('')}</div>`;
+for (const [k,t] of Object.entries(BHELP)) HELP['b_'+k] = t;
+const refName = () => esc(D.reference.server?.name || 'the vendor MCP server');
+const refSource = () => { const R = D.reference, src = R.source||{};
+  const what = src.kind==='session' ? 'the tool list the server itself returned' : `${esc(D.connector)}'s published tool list`;
+  return `${src.url?`<a href="${esc(src.url)}" target="_blank" rel="noopener">${what}</a>`:what}${R.read_at?`, read ${esc(String(R.read_at).slice(0,10))}`:''}`; };
+function refPanel(){
+  if (!D.reference && D.reference_none) return `<p class="muted" style="font-size:13.5px">${esc(D.connector)} has no MCP server of its own to compare with (checked ${esc(String(D.reference_none.checked_at||'').slice(0,10))}).</p>`;
+  const R = D.reference; if(!R) return '';
+  const b = R.caps.buckets;
+  return `<div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h3>Against ${refName()}</h3><button type="button" class="link" data-go="vendor">See the comparison →</button></div>
+    ${bbar(b,R.caps.total)}${blegend(b)}<p class="muted" style="font-size:13.5px">${R.caps.total} capabilities of ${esc(D.connector)}'s API checked against both MCP servers, from ${refSource()}. Read from tool descriptions, not measured by running them.</p></div>`;
+}
+let vFilter = 'all', vArea = '';
+/* per area, one question: of this area's API capabilities, how many can each server do, and where
+ * do they differ. Partly counts as can-do on both sides, as everywhere in this comparison. */
+function vendorAreas(R){
+  const row = (name, x, total, strong) => {
+    const n = x.total, cd = x.both + x.cdata_only, vd = x.both + x.vendor_only, none = x.neither + x.app_only + x.unmapped;
+    const meter = (v, cls) => `<div class="bar minibar" role="img" aria-label="${v} of ${n}"><i class="${cls}" style="width:${pct(v,n)}"></i></div>`;
+    const diff = [x.cdata_only?`<span class="pill b">+${x.cdata_only} only CData</span>`:'', x.vendor_only?`<span class="pill n">+${x.vendor_only} only vendor</span>`:''].filter(Boolean).join(' ') || '<span class="muted">same</span>';
+    const T = t => strong ? `<b>${t}</b>` : t;
+    return `<tr${total?' class="total"':''}><td>${T(esc(name))}</td><td>${T(n)}</td><td>${T(`${cd} of ${n}`)}${meter(cd,'b')}</td><td>${T(`${vd} of ${n}`)}${meter(vd,'y')}</td><td>${diff}</td><td class="muted">${none}${x.app_only?` <span style="font-size:12.5px">(${x.app_only} app only)</span>`:''}${x.unmapped?` <span style="font-size:12.5px">(${x.unmapped} not compared)</span>`:''}</td></tr>`;
+  };
+  const tot = { ...R.caps.buckets, total: R.caps.total };
+  return `<div class="tbl"><table class="num"><thead><tr><th>Business area</th><th>API capabilities</th><th>CData ConnectAI MCP can do</th><th>Vendor MCP can do</th><th>Difference</th><th>Neither can</th></tr></thead>
+    <tbody>${R.areas.map(a=>row(a.name, { ...a.buckets, total: a.total }, false, true)).join('')}${row('All areas', tot, true, true)}</tbody></table></div>
+    <p class="muted" style="font-size:13px">"Can do" includes partly. Open a capability below to see which tool or table does it.</p>`;
+}
+function vendorTab(){
+  const R = D.reference, b = R.caps.buckets, u = R.use_cases;
+  const areas = [...new Set(R.rows.map(r=>r.area).filter(Boolean))].sort();
+  const list = R.rows.filter(r => (vFilter==='all'||r.bucket===vFilter) && (!vArea||r.area===vArea));
+  return `<div class="sec-head"><h2>CData ConnectAI MCP and ${refName()}</h2><p class="muted">Every capability in ${esc(D.connector)}'s API, checked against both MCP servers: CData ConnectAI MCP (the CData connector through Connect AI) and ${refName()}, ${esc(D.connector)}'s own. The vendor side is read from ${refSource()}; it is not measured by running the tools.</p></div>
+  <div class="panel">${bbar(b,R.caps.total)}${blegend(b)}</div>
+  <div class="strip num"><div class="stat"><span class="v">${R.tools.total}</span><span class="k">vendor MCP tools (${R.tools.read} read · ${R.tools.write} write)</span></div>
+    ${u.total?`<div class="stat"><span class="v">${u.buckets.both} / ${u.total}</span><span class="k">use cases both servers can serve</span></div><div class="stat"><span class="v">${u.buckets.cdata_only}</span><span class="k">${u.buckets.cdata_only===1?'use case':'use cases'} only CData can serve</span></div><div class="stat"><span class="v">${u.buckets.vendor_only}</span><span class="k">${u.buckets.vendor_only===1?'use case':'use cases'} only the vendor MCP can serve</span></div>`:''}</div>
+  ${R.areas.length>1?vendorAreas(R):''}
+  <div class="filters" role="group" aria-label="Filter capabilities">${[['all','All',R.rows.length],...Object.keys(BL).filter(k=>b[k]).map(k=>[k,BL[k],b[k]])].map(([k,l,n])=>`<button type="button" data-vf="${k}" aria-pressed="${vFilter===k}">${esc(l)} <span class="muted num">${n}</span></button>`).join('')}
+    ${areas.length>1?`<label class="muted" for="v-area-filter" style="font-size:13px;margin-left:8px">Area</label><select id="v-area-filter"><option value="">All areas</option>${areas.map(a=>`<option ${a===vArea?'selected':''}>${esc(a)}</option>`).join('')}</select>`:''}
+    <span class="muted num" style="font-size:13px">${list.length} shown</span></div>
+  <div class="tbl"><table class="fixed"><colgroup><col style="width:26%"><col style="width:20%"><col style="width:18%"><col style="width:18%"><col style="width:18%"></colgroup>
+  <thead><tr><th>Capability</th><th>${esc(D.connector)} API</th><th>CData ConnectAI MCP</th><th>Vendor MCP</th><th>Note</th></tr></thead><tbody>
+  ${list.map(r=>`<tr><td>${esc(r.label)}<br>${BP(r.bucket)}${r.area?` <span class="muted" style="font-size:12.5px">${esc(r.area)}</span>`:''}</td><td class="mono">${API(r)}</td><td>${ST(r.cdata)}${r.cdata_via?`<br><span class="mono muted" style="font-size:12px">${esc(r.cdata_via)}</span>`:''}</td><td>${VS(r.vendor)}${r.vendor_tools.length?`<br><span class="mono muted" style="font-size:12px">${esc(r.vendor_tools.join(', '))}</span>`:''}</td><td class="muted" style="font-size:13px">${esc(r.note||'')}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No capability matches.</td></tr>'}</tbody></table></div>
+  <div class="two"><div class="panel"><h3>Vendor tools outside the API's capabilities</h3>${R.extra.length?`<ul class="list">${R.extra.map(x=>`<li><span><b class="mono">${esc(x.tool)}</b><br><span class="muted" style="font-size:13px">${esc(x.note||x.description)}</span></span></li>`).join('')}</ul>`:'<p class="empty">None: every vendor tool maps to an API capability.</p>'}${R.unused.length?`<p class="muted" style="font-size:13px">Not matched to anything yet: ${esc(R.unused.map(x=>x.tool).join(', '))}.</p>`:''}</div>
+    <div class="panel"><h3>Where one SQL query helps</h3>${R.query.use_cases?`<p class="muted" style="font-size:13.5px">Of ${R.query.use_cases} researched use cases, ${R.query.aggregation} need totals or counts and ${R.query.relationships} need links between objects. CData ConnectAI MCP can answer these in one SQL query (joins, GROUP BY). A server with a tool per API call leaves the joining and adding up to the agent, over several calls. This is read from the use case tags, not measured.</p>`:'<p class="empty">No use cases researched yet.</p>'}</div></div>`;
+}
+
+/* ---- analysis report (3.8): research only, nothing run ---- */
+const OL = {ready:'Ready to test',partly:'Needs a partly supported capability',unsupported:'Not supported by CData ConnectAI MCP',not_applicable:"Only in the source's own app",account_refused:'Test account refuses it',account_empty:'Test account has no data for it',unknown:'Capability not in the list'};
+const OC = {ready:'y',partly:'p',unsupported:'v-unsupported',not_applicable:'v-not_applicable',account_refused:'v-blocked_account',account_empty:'v-blocked_data',unknown:'na'};
+const OHELP = {ready:'Every capability it needs is supported and the test account holds data for it. A run measures the AI.',
+  partly:'It needs a capability CData ConnectAI MCP supports only in part. A run shows whether the supported part is enough.',
+  unsupported:'It needs a capability the API offers that CData ConnectAI MCP does not. A CData gap: a run is expected to end "not supported".',
+  not_applicable:"What it needs exists only in the source's own app, with no API. No connector could offer it.",
+  account_refused:"The test account's plan or rights refuse a table it needs. A run would measure the account, not the connector.",
+  account_empty:'Every table it reads is empty in the test account. Seed test data first, or a run measures an empty account.',
+  unknown:'It names a capability the capability list does not have. Fix the catalog before running it.'};
+const OP = o => `<span class="pill ${OC[o]||'na'} tip" tabindex="0" data-tip="${esc(OHELP[o]||'')}">${esc(OL[o]||o)}</span>`;
+const obar = (v, total) => `<div class="bar" role="img" aria-label="${Object.keys(OL).filter(k=>v[k]).map(k=>`${v[k]} ${OL[k].toLowerCase()}`).join(', ')}">${Object.keys(OL).filter(k=>v[k]).map(k=>`<i class="${OC[k]}" style="width:${pct(v[k],total)}"></i>`).join('')}</div>`;
+const olegend = v => `<div class="legend num" style="flex-direction:column;align-items:flex-start;gap:6px">${Object.keys(OL).filter(k=>v[k]).map(k=>`<span><span class="dot ${OC[k]}"></span><b>${v[k]}</b>&nbsp;${T(OL[k].toLowerCase(),'o_'+k)}</span>`).join('')}</div>`;
+for (const [k,t] of Object.entries(OHELP)) HELP['o_'+k] = t;
+function aSummary(){
+  const c = D.caps, A = D.analysis, n = A.use_cases.length, o = A.outlook, ap = c.total;
+  const topGaps = D.gaps.filter(g=>g.blocked).slice(0,3);
+  return `<div class="answer">
+    <div class="panel"><span class="eyebrow">${esc(D.connector)} capabilities</span>
+      <div class="big"><span class="n num">${ap}</span><span class="l">${T(`things ${esc(D.connector)}'s API can do`,'caps')}</span></div>
+      <div class="bar" role="img" aria-label="${c.supported} supported, ${c.partly} partly, ${c.not_exposed} not supported, ${c.product_only} not applicable"><i class="y" style="width:${pct(c.supported,ap)}"></i><i class="p" style="width:${pct(c.partly,ap)}"></i><i class="n" style="width:${pct(c.not_exposed,ap)}"></i><i class="na" style="width:${pct(c.product_only,ap)}"></i></div>
+      <div class="legend num"><span><span class="dot y"></span><b>${c.supported}</b>&nbsp;${T('supported','supported')}</span><span><span class="dot p"></span><b>${c.partly}</b>&nbsp;${T('partly supported','partly')}</span><span><span class="dot n"></span><b>${c.not_exposed}</b>&nbsp;${T('not supported','notpossible')}</span><span><span class="dot na"></span><b>${c.product_only}</b>&nbsp;${T('not applicable','notapplicable')}</span></div>
+      <p class="muted" style="font-size:13.5px">One capability is one operation ${esc(D.connector)}'s API documents — <span class="mono">Query Invoice</span>, <span class="mono">Create Bill</span> — which CData ConnectAI MCP turns into a table to query, a column to write, or a procedure to call. <button type="button" class="link" data-go="caps">See all ${ap} and what each becomes</button><br>Not supported is a CData gap: the API offers it, CData ConnectAI MCP does not. Not applicable is not: it exists only in ${esc(D.connector)}'s own app.${c.not_applicable?` ${c.not_applicable} API operations (sign-in, webhooks…) are not data capabilities and are left out.`:''}${PROV()?` <b>${PROV()}</b>`:''}</p></div>
+    <div class="panel"><span class="eyebrow">Real business use cases · not run yet</span>
+      <div class="big"><span class="n num">${n}</span><span class="l">use cases found, with what each is expected to meet</span></div>
+      ${n?obar(o,n)+olegend(o)+EVLINE(A.use_cases):'<p class="empty">No use cases researched yet.</p>'}
+      <p class="muted" style="font-size:13.5px">${n?`${o.ready+o.partly} of ${n} can test the AI once run${o.partly?` (${o.partly} of them lean on a partly supported capability)`:''}. ${o.unsupported+o.not_applicable} are expected to end as not supported or not applicable whatever the AI does${o.account_refused+o.account_empty?`, and ${o.account_refused+o.account_empty} need a better test account or seeded data first`:''}.`:''}</p></div></div>
+  ${refPanel()}
+  <div class="two">
+    <div class="panel"><h3>Biggest gaps vs the API</h3>${topGaps.length?`<ul class="list num">${topGaps.map(g=>`<li><span>${esc(g.label)}</span><span class="pill ${g.bucket}">${g.blocked} use case${g.blocked===1?'':'s'} need it</span></li>`).join('')}</ul>`:'<p class="empty">No researched use case needs a gap.</p>'}<button type="button" class="link" data-go="gaps">See all ${D.gaps.length} gaps vs the API</button></div>
+    <div class="panel"><h3>Test account readiness</h3>${A.account_probed?`<ul class="list num">${A.readiness.map(r=>`<li><span>${esc(r.name)}<br><span class="muted" style="font-size:12.5px">${r.tables?`${r.data} of ${r.tables} tables hold data${r.refused?` · ${r.refused} refused by the plan`:''}${r.empty?` · ${r.empty} empty`:''}${r.needs_filter?` · ${r.needs_filter} need a filter to read`:''}`:'no table probed'}</span></span><span class="pill ${!r.tables?'na':r.refused||r.data<r.tables/2?'p':'y'}">${r.tables?Math.round(100*r.data/r.tables)+'%':'—'}</span></li>`).join('')}</ul>`:'<p class="empty">Not probed. Run the account probe (Stage 1.5d) to see what the test account can show.</p>'}</div></div>`;
+}
+let aFilter = 'all', aArea = '', aSort = '', aEv = '', aPersona = '';
+function aCard(u){
+  return `<div class="uc"><span class="uc-q"><span class="uc-id">${esc(u.id)}</span>"${esc(u.request)}"</span>
+    <span class="tags">${OP(u.outlook)}<span class="pill v-not_measured">Not run yet</span>${u.persona?`<span class="pill who">${esc(u.persona)}</span>`:''}${u.area?`<span class="pill who">${esc(u.area)}</span>`:''}${u.kind?`<span class="pill who">${esc(u.kind)}</span>`:''}${u.difficulty?`<span class="pill who">${esc(u.difficulty)}</span>`:''}${u.pattern?`<span class="pill who">${esc(PAT[u.pattern]||u.pattern)}</span>`:''}${EVP(u)}</span>
+    <details class="more"><summary class="link">Why this use case exists, what it needs, and what a correct answer does</summary>
+      <div class="two">
+        <div class="panel"><h3>Why this use case exists</h3><dl class="kv">
+          <dt>Who</dt><dd>${esc(u.persona||'—')}</dd>${u.moment?`<dt>When</dt><dd>${esc(u.moment)}</dd>`:''}<dt>Goal</dt><dd>${esc(u.goal||'—')}</dd>
+          ${u.frequency?`<dt>How often</dt><dd>${esc(u.frequency)}</dd>`:''}<dt>Source</dt><dd>${u.source?esc(`${u.source.kind}: ${u.source.title}`)+(u.source.url?` · <span class="mono">${esc(u.source.url)}</span>`:''):'—'}</dd>
+          <dt>${T('Evidence','evidence')}</dt><dd>${esc(EVL[u.evidence]||'—')}</dd>
+          ${u.difficulty?`<dt>${T('Difficulty','tags')}</dt><dd>${esc(u.difficulty)} · ${esc(PAT[u.pattern]||'')}${(u.tests||[]).length?` · tests ${esc(u.tests.join(', ').replace(/_/g,' '))}`:''}</dd>`:''}
+          <dt>Realism</dt><dd>${u.realism!=null?u.realism+' / 5 (judge)':'—'}${u.human?` · human rated ${esc(u.human.rating)}`:''}</dd>
+          ${u.variants?`<dt>Other wordings</dt><dd>${u.variants} variant${u.variants===1?'':'s'}, judged separately</dd>`:''}</dl></div>
+        <div class="panel"><h3>What it needs from ${esc(D.connector)}</h3><ul class="list">${u.capabilities.map(c=>`<li><span>${esc(c.label)}<br><span class="mono muted">${API(c)}</span></span>${ST(c.status)}</li>`).join('')||'<li class="empty">—</li>'}</ul></div></div>
+      <div class="panel"><h3>What a good answer does</h3>${u.expected.length?`<ul class="list">${u.expected.map(e=>`<li><span>${esc(e)}</span></li>`).join('')}</ul>`:'<p class="empty">No expected behaviour recorded.</p>'}</div></details></div>`;
+}
+function aUseCases(){
+  const all = D.analysis.use_cases, o = D.analysis.outlook;
+  const areas = [...new Set(all.map(u=>u.area).filter(Boolean))].sort();
+  const personas = [...new Set(all.map(u=>u.persona).filter(Boolean))].sort();
+  const list = sortUc(evFilter(all.filter(u => (aFilter==='all' || u.outlook===aFilter) && (!aArea||u.area===aArea) && (!aPersona||u.persona===aPersona)), aEv), aSort);
+  return `<div class="sec-head"><h2>Use cases, not run yet</h2><p class="muted">Each is a real request from a real source. The outlook is what a run is expected to meet, read from the capabilities it needs${D.analysis.account_probed?' and the test account':''}. It is not a result.</p></div>
+  <div class="filters" role="group" aria-label="Filter use cases">${[['all','All',all.length],...Object.keys(OL).filter(k=>o[k]).map(k=>[k,OL[k],o[k]])].map(([k,l,n])=>`<button type="button" data-af="${k}" aria-pressed="${aFilter===k}">${esc(l)} <span class="muted num">${n}</span></button>`).join('')}
+    <label class="muted" for="a-area-filter" style="font-size:13px;margin-left:8px">Area</label><select id="a-area-filter"><option value="">All areas</option>${areas.map(a=>`<option ${a===aArea?'selected':''}>${esc(a)}</option>`).join('')}</select>
+    <label class="muted" for="a-persona-filter" style="font-size:13px;margin-left:8px">Persona</label><select id="a-persona-filter"><option value="">All personas</option>${personas.map(x=>`<option ${x===aPersona?'selected':''}>${esc(x)}</option>`).join('')}</select>
+    ${ucControls(all, aSort, aEv, ['a-ev','a-sort'])}
+    <span class="muted num" style="font-size:13px">${list.length} shown</span></div>
+  <div class="tab" style="gap:10px">${list.map(aCard).join('') || '<p class="empty">No use case matches.</p>'}</div>`;
+}
+function aAreas(){
+  if(areaOpen) return aAreaDetail(areaOpen);
+  const R = new Map(D.analysis.readiness.map(r=>[r.id,r]));
+  return `<div class="sec-head"><h2>By business area</h2><p class="muted">Capabilities, use cases found and the test account, per area. Open an area to see every capability in it.</p></div>
+  <div class="tbl"><table class="num"><thead><tr><th>Business area</th><th>Capabilities</th><th>Use cases</th><th>Test account</th><th></th></tr></thead><tbody>${D.areas.map(a=>{const c=a.caps.y+a.caps.p+a.caps.n+(a.caps.na||0), r=R.get(a.id)||{use_cases:0,outlook:{}};return `<tr><td><b>${esc(a.name)}</b></td>
+    <td>${a.caps.y} of ${c} supported${a.caps.p?` · ${a.caps.p} partly`:''}${a.caps.n?` · ${a.caps.n} not supported`:''}${a.caps.na?` · ${a.caps.na} not applicable`:''}<div class="bar minibar"><i class="y" style="width:${pct(a.caps.y,c)}"></i><i class="p" style="width:${pct(a.caps.p,c)}"></i><i class="n" style="width:${pct(a.caps.n,c)}"></i></div></td>
+    <td>${!r.use_cases?'<span class="muted">not researched yet</span>':`${r.outlook.ready||0} of ${r.use_cases} ready${obar(r.outlook,r.use_cases).replace('class="bar"','class="bar minibar"')}`}</td>
+    <td>${D.analysis.account_probed&&r.tables?`${r.data} of ${r.tables} tables hold data${r.refused?` · ${r.refused} refused`:''}`:'<span class="muted">—</span>'}</td>
+    <td><button type="button" class="link" data-area="${esc(a.id)}">View&nbsp;details&nbsp;→</button></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function aAreaDetail(id){
+  const a = D.areas.find(x=>x.id===id); if(!a) return '';
+  const r = D.analysis.readiness.find(x=>x.id===id) || {use_cases:0,outlook:{}};
+  const ucs = D.analysis.use_cases.filter(u=>u.area_id===id);
+  const c = a.caps.y+a.caps.p+a.caps.n+(a.caps.na||0);
+  return `<button type="button" class="link" data-areaback="1">← All business areas</button>
+  <div class="sec-head"><span class="eyebrow">Business area</span><h2>${esc(a.name)}</h2></div>
+  <div class="strip num"><div class="stat"><span class="v">${a.caps.y} / ${c}</span><span class="k">capabilities supported</span></div><div class="stat"><span class="v">${r.use_cases}</span><span class="k">use cases found</span></div><div class="stat"><span class="v">${r.outlook.ready||0}</span><span class="k">ready to test</span></div>${D.analysis.account_probed?`<div class="stat"><span class="v">${r.data} / ${r.tables}</span><span class="k">tables with data in the test account</span></div>`:''}</div>
+  ${r.use_cases?obar(r.outlook,r.use_cases)+olegend(r.outlook):''}
+  ${(r.refused_tables||[]).length||(r.empty_tables||[]).length?`<p class="note" role="note" style="font-size:13.5px">${r.refused_tables.length?`Refused by the test account's plan: ${esc(r.refused_tables.join(', '))}. `:''}${r.empty_tables.length?`Empty in the test account: ${esc(r.empty_tables.join(', '))}.`:''}</p>`:''}
+  <section><div class="sec-head"><h3>Every capability in this area</h3></div><div class="tbl"><table class="num"><thead><tr><th>Capability</th><th>API</th><th>Offered through ConnectAI MCP as</th><th>Result</th><th>Use cases that need it</th></tr></thead><tbody>${a.capabilities.map(k=>`<tr><td>${esc(k.label)}</td><td class="mono">${API(k)}</td><td class="mono">${esc(k.exposure)}</td><td>${ST(k.status)}</td><td>${k.needed||'<span class="muted">none</span>'}</td></tr>`).join('')}</tbody></table></div></section>
+  <section><div class="sec-head"><h3>Use cases</h3></div><div class="tbl"><table><thead><tr><th>ID</th><th>Request</th><th>Persona</th><th>Outlook</th></tr></thead><tbody>${ucs.map(u=>`<tr><td class="mono">${esc(u.id)}</td><td>"${esc(u.request)}"</td><td>${esc(u.persona||'')}</td><td>${OP(u.outlook)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No use cases in this area yet.</td></tr>'}</tbody></table></div></section>`;
+}
+function aRun(){
+  const r = D.run, A = D.analysis;
+  return `<div class="two"><div class="panel"><h3>What this analysis read</h3><dl class="kv num"><dt>Capability list</dt><dd>${r.capability_source?esc(`${r.capability_source.title||''} ${r.capability_source.version||''} · read ${String(r.capability_source.read_at||'').slice(0,10)}`):'—'}${PROV()?`<br><span class="muted" style="font-size:13px">${PROV()}</span>`:''}</dd>
+    <dt>Use case catalog</dt><dd>${r.catalog_version!=null?'v'+esc(r.catalog_version):'—'}${A.researched_at?` · updated ${esc(String(A.researched_at).slice(0,10))}`:''}</dd>
+    <dt>Test account probe</dt><dd>${A.account_probed?esc(String(A.account_at||'').slice(0,10)):'not run'}</dd>${ORCH()}<dt>Skill version</dt><dd>${esc(r.skill_version||'—')}</dd></dl></div>
+  <div class="panel"><h3>Next step</h3><p class="muted" style="font-size:13.5px">Run the use cases to turn each outlook into a measured result: the capability report then shows what the AI actually did, and the gaps tab counts the use cases each gap blocked.</p></div></div>
+  ${D.scope?`<div class="panel"><h3>Research by business area</h3><div class="tbl"><table class="num"><thead><tr><th>Area</th><th>Research</th><th>Use cases</th></tr></thead><tbody>${D.scope.areas.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.research==='frozen'?'frozen':x.research==='empty'?'not researched':x.research)}</td><td>${x.use_cases}</td></tr>`).join('')}</tbody></table></div></div>`:''}`;
+}
+const RENDER = {caps:capsTab,vendor:()=>D.reference?vendorTab():'',summary,usecases:useCases,gaps:gapsTab,areas:areasTab,friction:frictionTab,fix:fixTab,personas:()=>D.analysis?aPersonas():personasTab(),driver:driverTab,quality:qualityTab,failed:failedTab,run:runTab};
+let current = 'summary', detailUc = null;
+function render(){
+  app.innerHTML = header() + tabs() + `<main class="wrap page">${current==='summary'?UNVBANNER()+scopeBanner():''}<div class="tab" role="tabpanel" id="p-${current}" aria-labelledby="t-${current}">${current==='usecases'&&detailUc?ucDetail(detailUc):RENDER[current]()}</div>`
+    + `<footer>${D.analysis?`<span>connector-qa ${esc(D.run.skill_version||'')} · analysis · built from the capability list and the catalog, nothing run</span><span>${esc(D.connector)} · ${esc(D.run.date)}</span>`:`<span>connector-qa ${esc(D.run.skill_version||'')} · run <span class="mono">${esc(D.run.id)}</span> · built from the results store</span><span>${esc(D.connector)} · agent used: ${esc(D.run.model)} · ${esc(D.run.date)}</span>`}</footer></main>`;
+  app.querySelectorAll('[role="tab"]').forEach(b=>b.setAttribute('aria-selected',String(b.id==='t-'+current)));
+}
+app.addEventListener('click', e => {
+  const t = e.target.closest('button'); if(!t) return;
+  if(t.getAttribute('role')==='tab'){ current = t.id.slice(2); detailUc = null; areaOpen = null; try{localStorage.setItem('cap-tab',current)}catch(_){} render(); return; }
+  if(t.dataset.go){ current = t.dataset.go; render(); return; }
+  if(t.dataset.f){ ucFilter = t.dataset.f; render(); return; }
+  if(t.dataset.af){ aFilter = t.dataset.af; render(); return; }
+  if(t.dataset.kf){ kStatus = t.dataset.kf; render(); return; }
+  if(t.dataset.vf){ vFilter = t.dataset.vf; render(); return; }
+  if(t.dataset.gv){ gVendorOnly = t.dataset.gv==='1'; render(); return; }
+  if(t.dataset.fq){ fqOwner = t.dataset.fq; fqClass = ''; render(); return; }
+  if(t.dataset.fqt){ const k = t.dataset.fqt; fqOpen.has(k) ? fqOpen.delete(k) : fqOpen.add(k); render(); return; }
+  if(t.dataset.uc){ current = 'usecases'; detailUc = t.dataset.uc; render(); window.scrollTo({top:0}); return; }
+  if(t.dataset.back){ detailUc = null; render(); return; }
+  if(t.dataset.area){ areaOpen = t.dataset.area; render(); window.scrollTo({top:0}); return; }
+  if(t.dataset.areaback){ areaOpen = null; render(); return; }
+});
+app.addEventListener('change', e => { if(e.target.id==='area-filter'){ ucArea = e.target.value; render(); } if(e.target.id==='fq-class'){ fqClass = e.target.value; render(); } if(e.target.id==='a-area-filter'){ aArea = e.target.value; render(); } if(e.target.id==='a-persona-filter'){ aPersona = e.target.value; render(); } if(e.target.id==='persona-filter'){ ucPersona = e.target.value; render(); } if(e.target.id==='v-area-filter'){ vArea = e.target.value; render(); }
+  if(e.target.id==='uc-sort'){ ucSort = e.target.value; render(); } if(e.target.id==='uc-ev'){ ucEv = e.target.value; render(); }
+  if(e.target.id==='a-sort'){ aSort = e.target.value; render(); } if(e.target.id==='a-ev'){ aEv = e.target.value; render(); }
+  if(e.target.id==='k-area'){ kArea = e.target.value; render(); } });
+/* the capability search re-renders as you type, and render() rebuilds the whole panel, so put the
+ * caret back where it was or the box loses focus after the first keystroke */
+app.addEventListener('input', e => { if(e.target.id!=='k-q') return;
+  kQuery = e.target.value; render();
+  const box = document.getElementById('k-q'); if(box){ box.focus(); try{ box.setSelectionRange(box.value.length, box.value.length); }catch(_){} } });
+try{ const s = localStorage.getItem('cap-tab'); if(s && RENDER[s] && TABS.some(x=>x[0]===s)) current = s; }catch(_){}
+if (D) render(); else app.innerHTML = '<p>This template has not been filled — run scripts/build-capability-report.mjs.</p>';
+</script>
+</body></html>

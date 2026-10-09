@@ -1,0 +1,16 @@
+{
+  "name": "connector-qa",
+  "version": "3.9.2",
+  "private": true,
+  "description": "Coverage-driven QA runtime for CData connectors through the Connect AI MCP server — Claude Code skill",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node scripts/check-skill.mjs && node --test tests/",
+    "check": "node scripts/check-skill.mjs",
+    "fixture": "node tests/fixture-pipeline.test.mjs",
+    "package": "npm test && node tools/package.mjs"
+  }
+}

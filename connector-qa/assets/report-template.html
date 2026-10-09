@@ -1,0 +1,2011 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>/* FILL: CONNECTOR */ MCP Test Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf4;--border:#d1dae6;--text:#0f172a;--muted:#64748b;--accent:#0ea5e9;--pass:#16a34a;--fail:#dc2626;--partial:#d97706;--bnd:#0891b2;--schema:#7c3aed;--ne:#6b7280;--pass-bg:#dcfce7;--fail-bg:#fee2e2;--part-bg:#fef3c7;--bnd-bg:#e0f7fa;--schema-bg:#ede9fe;--ne-bg:#f3f4f6;--disc-bg:#e0f2fe;--disc:#0284c7;--driver:#d97706;--driver-bg:#fef3c7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.5}
+.hdr{background:linear-gradient(135deg,#0369a1,#0ea5e9);padding:20px 28px}
+.hdr h1{font-size:19px;font-weight:700;color:#fff}.hdr p{color:rgba(255,255,255,.8);font-size:12px;margin-top:3px}
+.stats{display:flex;flex-wrap:wrap;gap:12px;padding:14px 28px;background:var(--bg2);border-bottom:1px solid var(--border)}
+/* Each cluster used to size its own auto-fit grid, so a 6-tile cluster and a 2-tile cluster
+   drew tiles of completely different widths on the same row, and a long label pushed one tile
+   to four lines while its neighbours stayed at one. Fixed-width tiles in a wrapping flex row
+   make every tile identical whatever cluster it is in. */
+.stat-group{flex:0 1 auto;display:flex;flex-direction:column;gap:6px;min-width:0}
+.stat-group-t{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding-left:2px}
+.stat-group-b{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+#instr-scores,#schema-summary,#cost-summary,#gap-summary,#cust-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}
+/* funnel */
+.funnel{margin:12px 28px 0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;max-width:1344px}
+.funnel-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:8px}
+.funnel-h h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.fr{display:grid;grid-template-columns:200px 1fr 64px;gap:12px;align-items:center;padding:3px 0}
+.fr-l{font-size:11.5px;font-weight:600}.fr-l small{display:block;font-weight:400;color:var(--muted);font-size:10px}
+.fr-bar{height:18px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative}
+.fr-fill{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.fr-n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.f-blind{background:var(--fail-bg)}.f-seen{background:var(--accent)}.f-deep{background:var(--pass)}
+.funnel-note{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);line-height:1.55}
+/* limitations + run meta */
+.limits{margin:14px 28px;background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--partial);border-radius:0 8px 8px 0;padding:12px 16px;max-width:1344px}
+.limits h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--partial);margin-bottom:6px}
+.limits li{font-size:11.5px;line-height:1.6;list-style:none;padding-left:14px;position:relative}
+.limits li::before{content:'—';position:absolute;left:0;color:var(--partial)}
+.runmeta{margin:20px 28px 30px;padding-top:12px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8;max-width:1344px}
+.runmeta b{color:var(--text);font-weight:600}
+.stat{flex:0 0 auto;width:98px;min-height:68px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 5px;border-radius:8px;background:var(--bg3);border:1px solid var(--border)}
+.stat-n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05}
+.stat-l{font-size:9px;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;line-height:1.25;overflow-wrap:anywhere}
+/* the scope statement, before any score */
+.lede{padding:15px 28px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.lede h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
+.lede p{font-size:12.5px;line-height:1.65;max-width:1100px}
+.lede p+p{margin-top:7px}
+/* how far a workflow got, at a glance */
+.wf-chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:9px 0 4px}
+.wf-step{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;font-size:10.5px;
+  font-weight:600;white-space:nowrap;border:1px solid}
+.wf-arr{color:var(--muted);font-size:11px}
+.wf-p{background:var(--pass-bg,#dcfce7);color:#14532d;border-color:#bbf7d0}
+.wf-f{background:var(--fail-bg,#fee2e2);color:#991b1b;border-color:#fecaca}
+.wf-b{background:var(--bnd-bg,#e0f7fa);color:#155e75;border-color:#a5f3fc}
+.wf-d{background:var(--disc-bg,#e0f2fe);color:#075985;border-color:#bae6fd}
+/* a step never reached is drawn absent — it is unknown, not fine */
+.wf-sk{background:transparent;color:var(--muted);border-color:var(--border);border-style:dashed;opacity:.7}
+.exec-bar{padding:12px 28px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;background:var(--bg2);border-bottom:2px solid var(--border)}
+.exec-verdict{display:flex;align-items:center;gap:14px;padding:11px 16px;border-radius:8px;border-left:4px solid;flex-shrink:0;width:260px}
+.exec-verdict-text{flex:1}.exec-verdict-text .vt-label{font-size:13px;font-weight:800;line-height:1.2}.exec-verdict-text .vt-detail{font-size:10.5px;margin-top:3px;opacity:.8;line-height:1.4}
+.exec-health{text-align:center;flex-shrink:0}.exec-health .h-score{font-size:28px;font-weight:900;line-height:1}.exec-health .h-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.65}
+.exec-col{flex:1;min-width:180px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 13px}
+.exec-col h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px}
+.exec-col ul{list-style:none;padding:0}.exec-col li{font-size:11px;line-height:1.55;padding:2px 0;border-bottom:1px solid rgba(209,218,230,.5)}.exec-col li:last-child{border-bottom:none}.exec-col li::before{content:'▸ ';color:var(--accent)}
+.tab-bar{display:flex;gap:0;padding:0 28px;background:var(--bg2);border-bottom:2px solid var(--border)}
+.tab-btn{padding:10px 20px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}.tab-btn:hover{color:var(--text)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 28px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.nav a{padding:3px 9px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:11px}
+.nav a:hover{color:var(--accent);border-color:var(--accent)}
+.container{max-width:1400px;margin:0 auto;padding:18px 28px}
+.group{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.gh{padding:11px 16px;background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.gh-title{font-size:14px;font-weight:700}.gh-desc{font-size:11px;color:var(--muted);margin-top:1px}
+.gh-badges{display:flex;gap:4px;flex-shrink:0}
+.badge{display:inline-block;padding:2px 7px;border-radius:9999px;font-size:10px;font-weight:700}
+.p-b{background:var(--pass-bg);color:var(--pass)}.pcorr-b{background:#f0fdf4;color:#15803d;border:1px solid #86efac}.f-b{background:var(--fail-bg);color:var(--fail)}.part-b{background:var(--part-bg);color:var(--partial)}.bnd-b{background:var(--bnd-bg);color:var(--bnd)}.ne-b{background:var(--ne-bg);color:var(--ne)}.notexec-b{background:#f8fafc;color:#475569;border:1px solid #cbd5e1}
+.tbl-head{display:grid;grid-template-columns:80px 150px 220px 1fr 110px 55px;background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 12px}
+.tbl-head span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tc{display:grid;grid-template-columns:80px 150px 220px 1fr 110px 55px;border-bottom:1px solid var(--border);align-items:start}
+.tc:last-child{border-bottom:none}.tc:hover{background:rgba(14,165,233,.03)}
+.tc>div{padding:9px 10px;border-right:1px solid rgba(209,218,230,.4)}.tc>div:last-child{border-right:none}
+.col-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:700;word-break:break-all}
+.col-uc{font-weight:600;font-size:11.5px;line-height:1.4}
+.col-prompt{font-style:italic;color:#0369a1;font-size:11.5px;line-height:1.4}
+.col-status{text-align:center;padding-top:11px!important}
+.col-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding-top:11px!important}
+/* what the plan knew before the run — premium gating, a wrong documented column, an undoable
+   write. Small and muted: context for the verdict beside it, never competing with it. */
+.flags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.flag{font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;line-height:1.5;white-space:nowrap;
+      background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
+.flag.f-prem{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.flag.f-meta{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.flag.f-irr,.flag.f-wr{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+.flag.f-filt,.flag.f-push{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+.journey{display:flex;flex-direction:column;gap:4px}
+/* one line above the steps that says how the test went, so a reader can skim the column
+   without parsing every step block */
+.journey-label{font-size:10px;color:var(--disc);font-weight:600;margin-bottom:4px}
+.sc-badge{display:inline-block;margin-top:3px;background:var(--part-bg,#fff7ed);color:var(--partial);border:1px solid var(--partial);padding:1px 6px;border-radius:9999px;font-size:9.5px;font-weight:700}
+.sc-badge.drv{background:var(--driver-bg);color:var(--driver);border-color:var(--driver)}
+.step{padding:5px 8px;border-radius:0 4px 4px 0;font-size:10.5px}
+.step-f{background:var(--fail-bg);border-left:3px solid var(--fail)}.step-b{background:var(--driver-bg);border-left:3px solid var(--driver)}.step-d{background:var(--disc-bg);border-left:3px solid var(--disc)}.step-p{background:var(--pass-bg);border-left:3px solid var(--pass)}
+.step-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.step-f .step-label{color:var(--fail)}.step-d .step-label{color:var(--disc)}.step-p .step-label{color:var(--pass)}.step-b .step-label{color:var(--driver)}
+.step-take{background:var(--bg3);border-left:3px solid var(--muted)}.step-take .step-label{color:var(--muted)}.step-take .act{color:var(--fg)}
+.step-e{background:var(--bg3);border-left:3px solid var(--muted)}.step-e .step-label{color:var(--muted)}.step-e .act{color:var(--muted)}
+.sc-badge.emp{background:var(--bg3);color:var(--muted);border-color:var(--border)}
+.step code{background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);border-radius:3px;padding:2px 5px;font-family:'JetBrains Mono',monospace;font-size:9.5px;display:block;margin:2px 0;word-break:break-all;white-space:pre-wrap}
+.own{margin-top:4px;font-size:9px;font-weight:800;letter-spacing:.07em;padding:2px 0;border-radius:3px;border:1px solid}
+.own-ai{color:var(--fail);border-color:var(--fail);background:var(--fail-bg)}
+.own-drv{color:var(--driver);border-color:var(--driver);background:var(--driver-bg)}
+.own-sch{color:var(--schema);border-color:var(--schema);background:var(--schema-bg)}
+.observed{margin-top:6px;padding-top:5px;border-top:1px dashed var(--border);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.obs-k{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.obs-k.obs-miss{color:var(--fail)}
+.obs-p{font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 5px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.obs-div{flex-basis:100%;font-size:10px;color:var(--partial);font-weight:600;margin-top:2px}
+.step .err{color:var(--fail);font-size:10px;margin-top:2px;font-weight:500}.step .res{color:var(--pass);font-size:10px;margin-top:2px;font-weight:500}.step .act{color:var(--disc);font-size:10px;margin-top:2px}
+.capcov-warn{font-size:11.5px;padding:9px 12px;margin-bottom:12px;border-radius:6px;background:var(--fail-bg);border:1px solid var(--fail);color:var(--fail);line-height:1.55}
+.capcov-ok{font-size:11.5px;padding:9px 12px;margin-bottom:12px;border-radius:6px;background:var(--pass-bg);border:1px solid var(--pass);color:var(--pass)}
+.bug-meta{font-size:11.5px;padding:10px 12px;margin-bottom:14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;line-height:1.6}
+.bug-h{font-size:12px;font-weight:700;margin:18px 0 8px;display:flex;align-items:center;gap:6px}
+.bug-h-f{color:var(--fail)}.bug-h-w{color:var(--pass)}
+.bug-n{font-size:10px;font-weight:600;padding:1px 7px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.bug-note{font-size:10.5px;color:var(--muted);margin:-2px 0 8px;line-height:1.5}
+.bug-sum{margin:0 0 4px;padding-left:22px;font-size:11.5px;line-height:1.7}
+.bug-sum li{padding:2px 0}
+.bug-ids{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
+.bug-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:6px}
+.bug-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.bug-tbl th{background:var(--bg3);text-align:left;padding:7px 9px;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.bug-tbl td{padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+.bug-tbl tr:last-child td{border-bottom:none}
+.bug-tbl code{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:var(--bg2);padding:5px 7px;border-radius:4px;min-width:240px}
+.bug-id{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10.5px;white-space:nowrap}
+.bug-tc{font-weight:400;font-size:9px;color:var(--muted);margin-top:2px}
+.bug-qid{font-family:'JetBrains Mono',monospace;font-size:9.5px;word-break:break-all;min-width:90px}
+.bug-none{color:var(--muted);font-style:italic;font-family:inherit}
+.q-abbrev{opacity:.75;border-left:2px dashed var(--partial)}
+.q-note{font-size:9px;color:var(--partial);margin-top:2px;font-style:italic}
+.bug-actual{color:var(--fail)}
+.bug-empty{color:var(--muted)}
+.bug-notes{color:var(--muted);font-size:10.5px}
+.bug-mismatch-row td{background:#fefce8;border-top:none;padding-top:0}
+.bug-k{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;border:1px solid}
+.k-driver-defect{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+.k-driver-timeout{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+.k-driver-limit,.k-driver-filter,.k-api-permission,.k-rejected{background:var(--driver-bg);color:var(--driver);border-color:var(--driver)}
+.k-ai-error{background:var(--disc-bg);color:var(--disc);border-color:var(--disc)}
+.k-empty{background:var(--bg3);color:var(--muted);border-color:var(--border)}
+.section-title{padding:18px 28px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);text-align:center}
+.fail-section{padding:16px 28px;max-width:1400px;margin:0 auto}
+.fail-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:13px 16px;margin-bottom:10px}
+.fail-card h4{font-size:13px;margin-bottom:5px}.fail-card p{font-size:12px;color:var(--muted);line-height:1.65}
+.fault-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.fault-tbl th{padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg3)}
+.fault-tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.fault-tbl tr:nth-child(even) td{background:var(--bg)}
+.owner-ai{color:var(--fail);font-weight:700;font-size:11px}.owner-driver{color:var(--driver);font-weight:700;font-size:11px}.owner-schema{color:var(--schema);font-weight:700;font-size:11px}.owner-ok{color:var(--pass);font-weight:700;font-size:11px}
+.dq-card{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:12px}
+.dq-sev{flex-shrink:0;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;white-space:nowrap}
+.dq-high{background:#fee2e2;color:#dc2626}.dq-med{background:#fef3c7;color:#d97706}.dq-low{background:#e0f2fe;color:#0284c7}
+.cap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:7px;padding:14px 28px;max-width:1400px;margin:0 auto}
+.cap-item{display:flex;align-items:flex-start;gap:8px;padding:7px 11px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);font-size:11.5px}
+.dot-g{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px;background:#16a34a}
+.dot-y{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px;background:#d97706}
+.dot-r{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px;background:#dc2626}
+.instr-section{padding:0 28px 20px;max-width:1400px;margin:0 auto}
+.findings-table{width:100%;border-collapse:collapse;font-size:12px}
+.findings-table th{padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg3)}
+.findings-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.findings-table tr:nth-child(even){background:var(--bg)}
+.cost-controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 28px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.cost-controls label{font-size:12px;font-weight:600;color:var(--muted)}
+.cost-controls select,.cost-controls input{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)}
+.cost-section{padding:0 28px 20px;max-width:1400px;margin:0 auto}
+.cost-bar-row{display:grid;grid-template-columns:200px 1fr 90px 80px 70px;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(209,218,230,.4);font-size:12px}
+.cost-bar-row:last-child{border-bottom:none}
+.cost-bar-wrap{background:var(--bg3);border-radius:3px;height:10px;overflow:hidden}
+.cost-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#0ea5e9,#7c3aed)}
+.cost-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.cost-tbl th{padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg3)}
+.cost-tbl td{padding:7px 12px;border-bottom:1px solid var(--border)}
+.cost-tbl tr:nth-child(even) td{background:var(--bg)}.cost-tbl tr:hover td{background:rgba(14,165,233,.04)}
+.rate-bar-wrap{padding:10px 28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.rate-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.rate-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pass),#22c55e)}
+/* coverage matrix */
+.cov-wrap{overflow-x:auto;padding:14px 28px;max-width:1400px;margin:0 auto}
+.cov-matrix{border-collapse:collapse;font-size:11px;white-space:nowrap}
+.cov-matrix th{padding:6px 10px;text-align:center;background:var(--bg3);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;border:1px solid var(--border)}
+.cov-matrix th.row-hdr{text-align:left;min-width:160px}
+.cov-matrix td{padding:5px 8px;border:1px solid var(--border);text-align:center}
+.cov-good{background:#dcfce7;color:#166534}.cov-fail{background:#fee2e2;color:#991b1b}.cov-none{background:var(--bg);color:var(--border)}
+/* schema coverage */
+.sch-filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px 28px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.sch-filter{padding:3px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer}
+.sch-filter.active,.sch-filter:hover{color:var(--accent);border-color:var(--accent);background:rgba(14,165,233,.08)}
+.sch-filter.lens-off{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.sch-filter.lens-off:hover{color:var(--muted);border-color:var(--border);background:var(--bg3)}
+.sch-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;padding:14px 28px;max-width:1400px;margin:0 auto}
+.sch-cat-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.sch-bar-track{background:var(--bg3);border-radius:3px;height:7px;overflow:hidden;margin:6px 0 4px}
+.sch-bar-fill{height:100%;border-radius:3px}
+/* persona cards */
+.persona-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:14px 28px;max-width:1400px;margin:0 auto}
+.persona-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.persona-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.persona-desc{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.persona-stats{display:flex;gap:10px}
+.persona-stat{font-size:11px;color:var(--muted)}.persona-stat span{font-weight:700;color:var(--text)}
+/* gap analysis */
+.gap-card{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:8px;padding:11px 15px;margin-bottom:9px}
+.gap-p1{border-left-color:var(--fail)}.gap-p2{border-left-color:var(--partial)}.gap-p3{border-left-color:var(--accent)}.gap-p4{border-left-color:var(--ne)}
+.gap-top{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:5px}
+.gap-id{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--accent)}
+.gap-desc{font-size:12.5px;font-weight:600;line-height:1.45;margin-bottom:5px}
+.gap-meta{font-size:11px;color:var(--muted);line-height:1.6}
+.gap-meta b{color:var(--text);font-weight:600}
+.cat-b{background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
+.st-closed{background:var(--pass-bg);color:var(--pass)}.st-partial{background:var(--part-bg);color:var(--partial)}
+.st-failed{background:var(--fail-bg);color:var(--fail)}.st-open{background:var(--ne-bg);color:var(--ne)}
+.st-na{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}.st-nt{background:var(--schema-bg);color:var(--schema)}
+.tier-T1{background:#fee2e2;color:#b91c1c}.tier-T2{background:var(--part-bg);color:var(--partial)}
+.tier-T3{background:var(--disc-bg);color:var(--disc)}.tier-T4{background:var(--ne-bg);color:var(--ne)}
+/* coverage dimensions */
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;padding:14px 28px;max-width:1400px;margin:0 auto}
+.dim-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 15px}
+.dim-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.dim-sub{font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.45}
+.dim-pct{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.dim-frac{font-size:11px;color:var(--muted);margin-left:5px}
+.dim-note{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+/* provenance chips */
+.prov{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:700;letter-spacing:.03em}
+.prov-FACT{background:var(--pass-bg);color:var(--pass)}
+.prov-INFERENCE{background:var(--part-bg);color:var(--partial)}
+.prov-UNKNOWN{background:var(--fail-bg);color:var(--fail)}
+.src-tag{font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+/* evidence bars */
+.ev-row{display:grid;grid-template-columns:190px 1fr 110px;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(209,218,230,.4);font-size:11.5px}
+.ev-row:last-child{border-bottom:none}
+.ev-track{background:var(--bg3);border-radius:3px;height:9px;overflow:hidden}
+.ev-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#0ea5e9,#7c3aed)}
+.ev-fill.na{background:var(--ne)}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:13px 16px;margin-bottom:12px}
+.panel h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:7px}
+.note-line{font-size:11.5px;line-height:1.65;padding:3px 0;border-bottom:1px solid rgba(209,218,230,.4)}
+.note-line:last-child{border-bottom:none}
+</style>
+</head><body>
+
+<div class="hdr">
+  <h1 id="hdr-title"></h1>
+  <p id="hdr-sub"></p>
+</div>
+<div class="lede" id="lede"></div>
+<div class="exec-bar" id="exec-bar"></div>
+<div class="stats" id="stats"></div>
+<div class="rate-bar-wrap">
+  <span style="font-size:11px;font-weight:600;color:var(--muted)">Pass rate</span>
+  <div class="rate-bar"><div class="rate-fill" id="rate-fill"></div></div>
+  <span id="rate-pct" style="font-size:13px;font-weight:700;color:var(--pass)"></span>
+  <span id="rate-frac" style="font-size:11px;color:var(--muted)"></span>
+</div>
+<div class="tab-bar" id="tab-bar"></div>
+
+<div id="tab-results" class="tab-pane">
+  <div class="fail-section" id="verdict-key"></div>
+  <div class="sch-filter-bar" id="groupby-bar">
+    <span style="font-size:11px;font-weight:600;color:var(--muted)">Group by:</span>
+    <button class="sch-filter active" onclick="regroup('process',this)">Business Process</button>
+    <button class="sch-filter" onclick="regroup('role',this)">Role</button>
+    <button class="sch-filter" onclick="regroup('persona',this)">Persona</button>
+    <button class="sch-filter" onclick="regroup('object',this)">Object</button>
+    <button class="sch-filter" onclick="regroup('gap',this)">Gap Category</button>
+    <button class="sch-filter" onclick="regroup('suite',this)">Suite</button>
+    <span id="groupby-count" style="margin-left:auto;font-size:11px;color:var(--muted)"></span>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="container" id="report"></div>
+</div>
+<div id="tab-workflows" class="tab-pane">
+  <div class="note-line" style="margin-bottom:14px"><b>What this tab tells you.</b> Whether a whole
+  job of work survives end to end &mdash; not whether one query returns rows. Each row is a business
+  workflow the connector was asked to carry out from start to finish. <b>How far it got is the
+  result.</b> A defect here is invisible to every other tab: an <code>INSERT</code> that succeeds and
+  a row the next <code>SELECT</code> cannot see passes twice as two tests and fails once as a workflow.</div>
+  <div class="stats" id="wf-summary"></div>
+  <div class="section-title">Every workflow, and how far it got</div>
+  <div class="fail-section" id="wf-list"></div>
+</div>
+
+<div id="tab-failures" class="tab-pane">
+  <div class="section-title">Capability Coverage — advertised vs exercised</div>
+  <div class="fail-section" id="capcov"></div>
+  <div class="section-title">Driver Bug Report — Reproducible Queries</div>
+  <div class="fail-section" id="bug-report"></div>
+  <div class="section-title">Failure Root-Cause Analysis</div>
+  <div class="fail-section" id="fail-narratives"></div>
+  <div class="section-title">Fault Attribution</div>
+  <div class="fail-section"><table class="fault-tbl" id="fault-tbl"></table></div>
+  <div class="section-title">Data Quality Observations</div>
+  <div class="fail-section" id="dq-section"></div>
+  <div class="section-title">MCP Capability Matrix</div>
+  <div class="cap-grid" id="cap-grid"></div>
+  <div class="section-title">⚠️ Top Issues</div>
+  <div class="fail-section" id="top-issues-section"></div>
+  <div class="section-title">💬 Write Tests</div>
+  <div class="fail-section" id="write-tests-section"></div>
+</div>
+<div id="tab-instructions" class="tab-pane">
+  <div class="section-title" id="instr-scores-t">Instructions Quality Scores</div>
+  <div class="stats" id="instr-scores"></div>
+  <div id="instr-verdict"></div>
+  <div class="section-title" id="findings-t">Finding-by-Finding Breakdown</div>
+  <div class="instr-section" id="findings-wrap"><table class="findings-table" id="findings-table"></table></div>
+  <div class="section-title" id="instr-recs-t">Improvement Recommendations</div>
+  <div class="instr-section" id="instr-recs-wrap"><ol id="instr-recs" style="padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.65"></ol></div>
+  <div class="section-title" id="instr-raw-t">Raw getInstructions() Output</div>
+  <div class="instr-section" id="instr-raw-wrap"><pre id="instr-raw" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:11px;line-height:1.7;white-space:pre-wrap;overflow-x:auto;color:var(--muted)"></pre></div>
+</div>
+<div id="tab-cost" class="tab-pane">
+  <div class="cost-controls">
+    <label>Model:</label>
+    <select id="model-sel" onchange="renderCost()">
+      <option value="haiku">Claude Haiku 4.5 — $0.80/$4 per 1M tokens</option>
+      <option value="sonnet" selected>Claude Sonnet 5 — $3/$15 per 1M tokens</option>
+      <option value="opus">Claude Opus 5.5 — $15/$75 per 1M tokens</option>
+      <option value="custom">Custom pricing…</option>
+    </select>
+    <span id="custom-prices" style="display:none;align-items:center;gap:8px">
+      <label>Input $/1M:</label><input id="in-price" type="number" value="3" step="0.1" style="width:70px">
+      <label>Output $/1M:</label><input id="out-price" type="number" value="15" step="0.1" style="width:70px">
+      <button onclick="renderCost()" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:var(--accent);color:#fff;font-size:12px">Apply</button>
+    </span>
+  </div>
+  <div class="stats" id="cost-summary"></div>
+  <div class="cost-section">
+    <div id="cost-by-group" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:16px"></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px">
+      <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Cost per Test Case — highest first</div>
+      <div id="cost-tc-table" style="overflow-x:auto"></div>
+    </div>
+    <div id="cost-insights" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px"></div>
+  </div>
+</div>
+<div id="tab-schema" class="tab-pane">
+  <div class="section-title">Schema Coverage</div>
+  <div class="stats" id="schema-summary"></div>
+  <div class="section-title" style="margin-top:4px">Coverage by Table Category</div>
+  <div class="sch-cat-grid" id="schema-cats"></div>
+  <div class="section-title">Personas</div>
+  <div class="persona-grid" id="persona-grid"></div>
+  <div class="section-title">Table-by-Table Status</div>
+  <div class="sch-filter-bar">
+    <span style="font-size:11px;font-weight:600;color:var(--muted)">Filter:</span>
+    <button class="sch-filter active" onclick="schFilter('all',this)">All</button>
+    <button class="sch-filter" onclick="schFilter('core',this)">Core</button>
+    <button class="sch-filter" onclick="schFilter('analytics',this)">Analytics</button>
+    <button class="sch-filter" onclick="schFilter('lookup',this)">Lookup</button>
+    <button class="sch-filter" onclick="schFilter('audit',this)">Audit</button>
+    <button class="sch-filter" onclick="schFilter('junction',this)">Junction</button>
+    <button class="sch-filter" onclick="schFilter('custom',this)">Custom</button>
+    <button class="sch-filter" style="color:var(--fail);border-color:var(--fail)" onclick="schFilter('gap',this)">Gaps only</button>
+  </div>
+  <div class="fail-section"><table class="fault-tbl" id="schema-tbl"></table></div>
+</div>
+
+<div id="tab-gaps" class="tab-pane active">
+  <div class="section-title">Gap Analysis — computed before any test executed</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center;max-width:900px;margin:0 auto">
+    These are the coverage gaps that existed <strong>before</strong> the first test ran. Tests were generated only to close them.
+    Each gap keeps its original description; the badge shows what execution proved.
+  </p>
+  <div class="funnel" id="funnel-gap"></div>
+  <div class="stats" id="gap-summary"></div>
+  <div class="section-title">Pre-Execution Review — what the plan did not cover</div>
+  <div class="fail-section" id="tc-review"></div>
+  <div class="section-title">Gap Closure by Priority</div>
+  <div class="fail-section" id="gap-priority"></div>
+  <div class="sch-filter-bar" id="gap-filter-bar">
+    <span style="font-size:11px;font-weight:600;color:var(--muted)">Filter:</span>
+    <button class="sch-filter active" onclick="gapFilter('all',this)">All</button>
+    <button class="sch-filter" onclick="gapFilter('P1',this)">P1</button>
+    <button class="sch-filter" onclick="gapFilter('P2',this)">P2</button>
+    <button class="sch-filter" onclick="gapFilter('P3',this)">P3</button>
+    <button class="sch-filter" style="color:var(--fail);border-color:var(--fail)" onclick="gapFilter('unresolved',this)">Unresolved only</button>
+  </div>
+  <div class="fail-section" id="gap-list"></div>
+</div>
+
+<div id="tab-coverage" class="tab-pane">
+  <div class="funnel" id="funnel-cov"></div>
+  <div class="section-title">Coverage Model — seven dimensions</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center">Every percentage states what it is coverage <em>of</em>. Items marked NOT APPLICABLE are removed from the denominator; NOT TESTABLE items stay counted as uncovered.</p>
+  <div class="dim-grid" id="cov-dims"></div>
+  <div class="section-title">Object Coverage by Tier</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center">Tiers are derived from workflow references, vendor reports, customer-query frequency and category — never hardcoded.</p>
+  <div class="fail-section"><table class="fault-tbl" id="cov-tier-tbl"></table></div>
+  <div class="section-title">Business Use Cases</div>
+  <div class="fail-section"><table class="fault-tbl" id="cov-uc-tbl"></table></div>
+  <div class="section-title">Query Pattern Coverage</div>
+  <div class="fail-section" id="cov-patterns"></div>
+  <div class="section-title">Relationship Coverage</div>
+  <div class="fail-section"><table class="fault-tbl" id="cov-rel-tbl"></table></div>
+  <div class="section-title">Stored Procedure Coverage</div>
+  <div class="fail-section"><table class="fault-tbl" id="cov-sp-tbl"></table></div>
+  <div class="section-title">NL / Intent Coverage</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center">Does the same business question survive rephrasing? Judged on semantic equivalence of the resolved query, not SQL string equality.</p>
+  <div class="fail-section" id="cov-intents"></div>
+  <div class="section-title">Agent Behavior Coverage</div>
+  <div class="cap-grid" id="cov-behaviors"></div>
+  <div class="section-title">Role × Process Coverage</div>
+  <p style="padding:0 28px 8px;font-size:11px;color:var(--muted);text-align:center">Green = all passing · Red = has failures · — = no TCs</p>
+  <div class="cov-wrap" id="cov-wrap"></div>
+</div>
+
+<div id="tab-semantic" class="tab-pane">
+  <div class="section-title">Connector Understanding</div>
+  <div class="fail-section" id="sem-overview"></div>
+  <div class="section-title">Semantic Schema</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center">
+    <span class="prov prov-FACT">FACT</span> from metadata or vendor docs ·
+    <span class="prov prov-INFERENCE">INFERENCE</span> deduced by AI ·
+    <span class="prov prov-UNKNOWN">UNKNOWN</span> could not be determined. AI inference is never presented as authoritative metadata.
+  </p>
+  <div class="sch-filter-bar">
+    <span style="font-size:11px;font-weight:600;color:var(--muted)">Tier:</span>
+    <button class="sch-filter active" onclick="semFilter('all',this)">All</button>
+    <button class="sch-filter" onclick="semFilter('T1',this)">T1 Critical</button>
+    <button class="sch-filter" onclick="semFilter('T2',this)">T2 Important</button>
+    <button class="sch-filter" onclick="semFilter('T3',this)">T3 Supporting</button>
+    <button class="sch-filter" onclick="semFilter('T4',this)">T4 Technical</button>
+  </div>
+  <div class="fail-section" id="sem-objects"></div>
+  <div class="section-title">Relationships</div>
+  <div class="fail-section"><table class="fault-tbl" id="sem-rels"></table></div>
+  <div class="section-title">Learned at Runtime</div>
+  <p style="padding:0 28px 6px;font-size:11px;color:var(--muted);text-align:center">Execution observations that changed the semantic model. Conflicts with higher-precedence metadata are reported, never silently overwritten.</p>
+  <div class="fail-section" id="sem-updates"></div>
+</div>
+
+<div id="tab-customer" class="tab-pane">
+  <div class="section-title">Customer Reality</div>
+  <div class="fail-section" id="cust-status"></div>
+  <div class="stats" id="cust-summary"></div>
+  <div class="section-title">What Real Users Actually Do</div>
+  <div class="fail-section" id="cust-patterns"></div>
+  <div class="section-title">Most-Queried Objects</div>
+  <div class="fail-section" id="cust-objects"></div>
+  <div class="section-title">Production Error Clusters</div>
+  <div class="fail-section"><table class="fault-tbl" id="cust-errors"></table></div>
+  <div class="section-title">Reconciliation — where evidence changed the plan</div>
+  <div class="fail-section" id="cust-recon"></div>
+</div>
+
+<div class="limits" id="limits"></div>
+<div class="runmeta" id="runmeta"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA CONSTANTS — written by scripts/build-report.mjs from the six artifacts.
+   Nothing here is edited by hand or by the model. Each declaration below carries a
+   placeholder marker until the build replaces the whole block.
+   ═══════════════════════════════════════════════════════════ */
+
+const REPORT_KIND = /* FILL: "test" | "gap" — selects the tab set */ "test";
+const CONNECTOR = /* FILL: connector name */ "Connector";
+const CONNECTOR_META = /* FILL: see Part 1 */ {app:"Connector",subtitle:"",role_complexity:"low",recommendation:"--processbased",total_roles:0,total_workflows:0,total_domains:0,sources:[]};
+const GROUPS = /* FILL: array of group objects */ [];
+const EXEC_SUMMARY = /* FILL: see Part 1 */ {verdict:"production_ready",verdictLabel:"",verdictDetail:"",health:0,top_issues:[],not_exec_reason:"All TCs executed",production_cost_note:""};
+const INSTR_EVAL = /* FILL: see Part 1 */ {scores:{completeness:0,accuracy:0,actionability:0,overall:0},prevented:0,trialerror:0,verdict:"needs_improvement",findings:[],recommendations:[],raw:""};
+const caps = /* FILL: capability matrix array */ [];
+const FAULT_TABLE = /* FILL: array of fault rows */ [];
+const DQ_OBSERVATIONS = /* FILL: array of DQ objects */ [];
+const CAPABILITY_COVERAGE_FALLBACK = [];
+const NOT_GENERATED = /* FILL: names of sections the model never wrote */ [];
+const COVERAGE_MATRIX = /* FILL: role × process counts; null only if no roles exist */ null;
+const SCHEMA_COVERAGE = /* FILL: see Part 1 — SCHEMA_COVERAGE */ null;
+const PERSONAS        = /* FILL: see Part 1 — PERSONAS */ [];
+const KNOWLEDGE         = /* FILL: see Part 1 — KNOWLEDGE */ null;
+const COVERAGE          = /* FILL: see Part 1 — COVERAGE */ null;
+const GAPS              = /* FILL: see Part 1 — GAPS (pre-execution set) */ [];
+const CUSTOMER_EVIDENCE = /* FILL: see Part 1 — {available:false} if no dump */ {available:false};
+const TC_REVIEW_SUMMARY = /* FILL: Stage 8.5 completeness audit — null when the review was skipped */ null;
+const RUN_META          = /* FILL: run_id, started_at, finished_at, models{}, mcp_server, driver_version, skill_version, metadata_snapshot_at */ null;
+const FUNNEL            = /* FILL: coverage.funnel — the discovery funnel with every denominator stated */ null;
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY & CONSTANTS (generic — do not change)
+   ═══════════════════════════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+const STATUS_MAP={
+  pass:        {cls:'p-b',        label:'PASS'},
+  pass_sql:    {cls:'pcorr-b',    label:'PASS [CORRECTED: SQL]'},
+  pass_col:    {cls:'pcorr-b',    label:'PASS [CORRECTED: COLUMN]'},
+  pass_tbl:    {cls:'pcorr-b',    label:'PASS [CORRECTED: TABLE]'},
+  pass_schema: {cls:'pcorr-b',    label:'PASS [CORRECTED: SCHEMA]'},
+  pass_dtype:  {cls:'pcorr-b',    label:'PASS [CORRECTED: DATATYPE]'},
+  pass_query:  {cls:'pcorr-b',    label:'PASS [CORRECTED: QUERY]'},
+  partial:     {cls:'part-b',     label:'PARTIAL'},
+  fail:        {cls:'f-b',        label:'FAIL'},
+  boundary:    {cls:'bnd-b',      label:'BLOCKED ✓'},
+  /* not_exec and ne are different findings — dispatched but produced nothing, versus never
+     reached at all — and sharing one label made them indistinguishable on the page. */
+  not_exec:    {cls:'notexec-b',  label:'RAN NOTHING'},
+  na:          {cls:'st-na',      label:'N/A'},
+  nt:          {cls:'st-nt',      label:'NOT TESTABLE'},
+  ne:          {cls:'ne-b',       label:'NOT RUN'}
+};
+const CORR_TYPES=['pass_sql','pass_col','pass_tbl','pass_schema','pass_dtype','pass_query'];
+const PASSY=['pass',...CORR_TYPES];
+/* Defensive: TCs with no status field but tool_calls=0 are treated as 'ne' (never reached).
+   This prevents them from being counted as executed or skewing pass/fail rates. */
+if(typeof GROUPS!=='undefined'){GROUPS.flatMap(g=>g.tcs||[]).forEach(tc=>{if(!tc.status&&tc.tool_calls===0) tc.status='ne';});}
+const GAP_STATUS={CLOSED:'st-closed',PARTIALLY_CLOSED:'st-partial',FAILED:'st-failed',
+                  OPEN:'st-open',NOT_APPLICABLE:'st-na',NOT_TESTABLE:'st-nt'};
+function pct(c,t){return t?Math.round(c/t*100):0}
+function bar(c,t,na){return `<div class="ev-track"><div class="ev-fill${na?' na':''}" style="width:${pct(c,t)}%"></div></div>`}
+
+const VERDICT_STYLE={
+  production_ready:{bg:'#dcfce7',border:'#16a34a',text:'#14532d'},
+  needs_attention: {bg:'#fef3c7',border:'#d97706',text:'#92400e'},
+  not_ready:       {bg:'#fee2e2',border:'#dc2626',text:'#7f1d1d'},
+  needs_improvement:{bg:'#ede9fe',border:'#7c3aed',text:'#4c1d95'},
+  good:            {bg:'#dcfce7',border:'#16a34a',text:'#14532d'},
+  excellent:       {bg:'#dcfce7',border:'#16a34a',text:'#14532d'}
+};
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════ */
+document.getElementById('hdr-title').textContent=
+  CONNECTOR+' CData Connect AI MCP — '+(REPORT_KIND==='gap'?'Gap Analysis':'Test Report');
+document.getElementById('hdr-sub').textContent=
+  (CONNECTOR_META.subtitle||'')+' · Run: '+new Date().toISOString().slice(0,10);
+
+/* The scope, stated before any score. A reader who meets a pass rate first has no idea what it is
+   a percentage of — which is how a read-only assessment of a read-write connector was once read as
+   96% healthy. Every number here comes from the run. */
+(function(){
+  const el=document.getElementById('lede'); if(!el) return;
+  const tcs=GROUPS.flatMap(g=>g.tcs||[]);
+  const F=FUNNEL||{}, C=COVERAGE||{};
+  const objs=F.connector_objects
+    ?? (((C.objects&&C.objects.tables&&C.objects.tables.rows)||[]).length
+       +((C.objects&&C.objects.views&&C.objects.views.rows)||[]).length);
+  const procs=((C.objects&&C.objects.procedures&&C.objects.procedures.rows)||[]).length;
+  const caps=Object.entries((CONNECTOR_META&&CONNECTOR_META.permissions)||{})
+    .filter(([,v])=>v===true).map(([k])=>k);
+  const wf=tcs.filter(t=>t.group_type==='workflow').length;
+
+  const bits=[];
+  if(objs)  bits.push(`every one of its <b>${objs} objects</b>`);
+  if(procs) bits.push(`all <b>${procs} stored procedures</b>`);
+  if(caps.length) bits.push(`all <b>${caps.length} capabilities</b> it advertises (${caps.join(', ')})`);
+
+  el.innerHTML=
+    `<h3>What we tested</h3>
+     <p><b>${tcs.length} natural-language business question${tcs.length===1?'':'s'}</b> put to the ${esc(CONNECTOR)}
+     connector through CData Connect AI${bits.length?' — covering '+bits.join(', '):''}.${
+       wf?` <b>${wf}</b> of them ask for a whole job of work end to end, not a single query.`:''}</p>
+     <p>Each question went to a <b>fresh AI agent</b> holding nothing but the connector's own tools: no prepared
+     SQL, no schema hints, no knowledge of the other tests. That is deliberate — it measures whether the connector
+     can actually be <i>used</i>, not whether a known-good query still runs.</p>`;
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════ */
+/* REPORT_KIND selects the tab set. One template renders both reports, so they cannot drift. */
+(function(){
+  const SETS={
+    /* The test report answers "did it work, and if not why". Everything about how much of the
+       connector was covered belongs to the gap report — one question per document. */
+    test:[
+      {id:'results',     label:'Test Results'},
+      /* shown only when the plan contains workflow tests, so a connector with none does not get an
+         empty tab that reads as "no workflows" rather than "none were generated" */
+      ...(GROUPS.some(g=>(g.tcs||[]).some(t=>t.group_type==='workflow'))?[{id:'workflows',label:'Workflows'}]:[]),
+      {id:'failures',    label:'Analysis'},
+      {id:'instructions',label:'Instructions Evaluation'}
+    ],
+    gap:[
+      {id:'gaps',     label:'Gap Analysis'},
+      {id:'coverage', label:'Coverage Model'},
+      {id:'schema',   label:'Schema Coverage'},
+      {id:'semantic', label:'Semantic Schema'},
+      ...((CUSTOMER_EVIDENCE&&CUSTOMER_EVIDENCE.available)?[{id:'customer',label:'Customer Reality'}]:[]),
+      {id:'cost',     label:'Token & Cost'}
+    ]
+  };
+  const tabs=SETS[REPORT_KIND]||SETS.test;
+  document.getElementById('tab-bar').innerHTML=
+    tabs.map((t,i)=>`<button class="tab-btn${i===0?' active':''}" onclick="showTab('${t.id}',this)">${esc(t.label)}</button>`).join('');
+  const first=document.getElementById('tab-'+tabs[0].id);
+  if(first) first.classList.add('active');
+})();
+/* One card per workflow: what was asked, what the agent did, how far it got. Built from the same
+   step records as the Test Results journey — a workflow is not a different kind of evidence, just
+   a longer one. */
+function renderWorkflows(){
+  const el=document.getElementById('wf-list'); if(!el) return;
+  const wf=GROUPS.flatMap(g=>g.tcs||[]).filter(t=>t.group_type==='workflow');
+  if(!wf.length){ el.innerHTML='<p style="font-size:12px;color:var(--muted)">No workflow tests in this plan.</p>'; return; }
+
+  const outcome=t=>{
+    if(t.executable===false) return {k:'HELD BACK',cls:'badge-ne',why:t.nt_reason||'deliberately not executed'};
+    if(!t.status||t.status==='ne') return {k:'PLANNED',cls:'badge-ne',why:'not executed in this run'};
+    if(PASSY.includes(t.status)) return {k:'WORKS',cls:'badge-pass',why:'completed as far as the connector allows'};
+    if(t.status==='partial') return {k:'PARTIAL',cls:'badge-partial',why:'completed by changing strategy'};
+    if(t.status==='boundary') return {k:'BLOCKED',cls:'badge-bnd',why:'stopped on permissions or plan — later steps unknown'};
+    if(t.status==='na') return {k:'NOT SUPPORTED',cls:'badge-ne',why:'the connector does not expose this'};
+    return {k:'BREAKS',cls:'badge-fail',why:(t.owner||'').replace('owner-','')||'an advertised capability failed'};
+  };
+
+  const n=k=>wf.filter(t=>outcome(t).k===k).length;
+  const sum=document.getElementById('wf-summary');
+  if(sum) sum.innerHTML=[
+    ['Workflows',wf.length,''],
+    ['Complete end to end',n('WORKS'),'var(--pass)'],
+    ['Broke partway',n('BREAKS'),'var(--fail)'],
+    ['Blocked',n('BLOCKED'),'var(--bnd)'],
+    ['Not executed',n('PLANNED')+n('HELD BACK'),'var(--ne)'],
+  ].map(([l,v,c])=>`<div class="stat"><div class="stat-v" style="${c?'color:'+c:''}">${v}</div><div class="stat-l">${l}</div></div>`).join('');
+
+  el.innerHTML=wf.map(t=>{
+    const o=outcome(t);
+    const steps=(t.steps||[]);
+    /* How far it got, at a glance. The journey below says what happened; this says where it
+       stopped — which for a workflow IS the result. */
+    const chain=steps.length?`<div class="wf-chain">${steps.map((st,i)=>{
+      const k=stepKind(st);
+      const cls=k==='ok'?'wf-p':k==='discovery'?'wf-d':k==='empty'?'wf-d'
+        :(k==='api-permission'||k==='driver-limit'||k==='driver-filter'||k==='rejected')?'wf-b':'wf-f';
+      const mark=cls==='wf-p'?'✓':cls==='wf-d'?'🔍':cls==='wf-b'?'⚠':'✗';
+      const label=(st.a||st.r||st.q||'step').replace(/^[^a-zA-Z]*/,'').split(/[.,;—]/)[0].slice(0,26)||('step '+(i+1));
+      return '<span class="wf-step '+cls+'">'+esc(label)+' <b>'+mark+'</b></span>';
+    }).join('<span class="wf-arr">→</span>')}${
+      t.executable===false?'<span class="wf-arr">→</span><span class="wf-step wf-sk">cleanup ⊘</span>':''}</div>`:'';
+    const strip=steps.length
+      ? `<div class="journey" style="margin-top:8px">${steps.map(stepHtml).join('')}${takeawayHtml(t)}</div>`
+      : `<div class="note-line" style="margin-top:8px">${t.executable===false
+          ? '⏸ '+esc(t.nt_reason||'planned, deliberately not executed')
+          : 'Planned; this run did not execute it.'}</div>`;
+    return `<div class="panel" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start">
+        <div><b>${esc(t.workflow_id||t.id)}</b> ${esc(t.uc||'')}
+          <div class="note-line">${esc(t.workflow_domain||t.business_domain||'')}${t.mutates?' · write':' · read'}${
+            (t.roles||[]).length?' · '+esc((t.roles||[]).slice(0,3).join(', ')):''} · ${steps.length||0} step(s)</div></div>
+        <div style="text-align:right;white-space:nowrap"><span class="badge ${o.cls}">${o.k}</span>
+          <div class="note-line">${esc(o.why)}</div></div>
+      </div>
+      <div class="col-prompt" style="margin-top:9px">"${esc(t.prompt||'')}"</div>
+      ${chain}
+      ${strip}
+    </div>`;
+  }).join('');
+}
+
+/* What each badge means, and — the part a reader actually needs — whose fault it is. Ten verdicts
+   render in this report and none of them were explained anywhere in it. */
+(function renderVerdictKey(){
+  const el=document.getElementById('verdict-key'); if(!el) return;
+  const tcs=GROUPS.flatMap(g=>g.tcs||[]);
+  const n=codes=>tcs.filter(t=>codes.includes(t.status)).length;
+
+  const ROWS=[
+    ['PASS','p-b',['pass'],'ok',
+     'The agent wrote the right query first time and got a usable answer.'],
+    ['PASS [CORRECTED]','pcorr-b',CORR_TYPES,'ai',
+     'The agent got it wrong first — a bad column, table, or join — then worked out the real name and succeeded. It counts as a pass because the job got done, and it is recorded separately because the connector made the agent guess.'],
+    ['PARTIAL','part-b',['partial'],'driver',
+     'The query was right and the connector could not comply — a timeout, an unsupported construct — so the agent changed strategy and still answered. The SQL was never the problem.'],
+    ['FAIL','f-b',['fail'],'depends',
+     'No usable answer after every retry. The owner tag beside it says whose fault: the agent, the driver, or the schema.'],
+    ['BLOCKED ✓','bnd-b',['boundary'],'env',
+     'The connector or API actively refused — 403, permission denied, a plan restriction. The tick is deliberate: refusing correctly is right behaviour, not a defect.'],
+    ['RAN NOTHING','notexec-b',['not_exec'],'plan',
+     'Dispatched, and the agent deliberately made no query — a contradiction, an ambiguity, or a safety rule. Or the plan held it back on purpose, with the reason on the row.'],
+    ['NOT TESTABLE','st-nt',['nt'],'env',
+     'We could not test it — no credentials, no test data, a sandbox limit. The gap stays open and counted; this is not a pass.'],
+    ['N/A','st-na',['na'],'ok',
+     'The connector correctly does not support it. No gap, no defect.'],
+    ['NOT RUN','ne-b',['ne'],'plan',
+     'Never reached, because something halted the run earlier. Nothing is known about it either way.'],
+  ];
+  const OWNER={ok:['—','var(--muted)'],ai:['the agent','var(--partial)'],driver:['the connector','var(--fail)'],
+    depends:['see the owner tag','var(--fail)'],env:['the environment','var(--bnd)'],plan:['this run, on purpose','var(--ne)']};
+
+  const rows=ROWS.map(([label,cls,codes,owner,text])=>{
+    const c=n(codes), [who,col]=OWNER[owner];
+    return `<tr${c?'':' style="opacity:.45"'}>
+      <td style="white-space:nowrap"><span class="badge ${cls}">${esc(label)}</span></td>
+      <td style="text-align:center;font-weight:700">${c}</td>
+      <td style="white-space:nowrap;color:${col};font-size:11px">${esc(who)}</td>
+      <td>${esc(text)}</td></tr>`;
+  }).join('');
+
+  const fault=n(['fail'])+n(['partial']);
+  el.innerHTML=`<div class="panel">
+    <div class="note-line" style="margin-bottom:9px"><b>What each result means.</b> Read this once and the rest of
+    the report is self-explanatory. The distinction that matters most is between a test the <b>agent</b> got wrong
+    and one the <b>connector</b> could not serve — a corrected pass and a partial look similar and mean opposite
+    things.${fault?` <b>${fault}</b> of ${tcs.length} test(s) point at the connector.`:''}</div>
+    <table class="fault-tbl"><thead><tr>
+      <th style="width:190px">Result</th><th style="width:60px">Count</th>
+      <th style="width:150px">Whose problem</th><th>What it means</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div class="note-line" style="margin-top:9px">Greyed rows did not occur in this run.</div>
+  </div>`;
+})();
+
+function showTab(name,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const pane=document.getElementById('tab-'+name);
+  if(pane) pane.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='cost') renderCost();
+  if(name==='workflows') renderWorkflows();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS BAR
+   ═══════════════════════════════════════════════════════════ */
+/* Fault owner, resolved once for the whole report.
+   Checkpoints have been written with both the contract form ("owner-driver") and a bare form
+   ("driver"), and an unrecognised value silently became "unattributed" — a run whose 17 partials
+   were all driver limitations displayed 0 Driver. Where the verdict recorded no owner at all,
+   infer it from the last failing step: `b` is a driver rejection, `f` is an AI mistake. */
+const OWNERS=['ai','driver','schema','ok'];
+function ownerOf(tc){
+  const raw=String(tc.owner||'').trim().toLowerCase().replace(/^owner-/,'');
+  if(OWNERS.includes(raw)) return 'owner-'+raw;
+  const bad=(tc.steps||[]).filter(s=>s.t==='f'||s.t==='b').pop();
+  return bad?(bad.t==='b'?'owner-driver':'owner-ai'):null;
+}
+
+(function(){
+  const allTCs=GROUPS.flatMap(g=>g.tcs);
+  const counts={pass:0,corrected:0,partial:0,fail:0,boundary:0,not_exec:0,ne:0,na:0,nt:0};
+  /* A slip the AI recovered from is NOT a failure. Count verdict-level fault separately
+     from step-level slips, or a self-correcting agent looks like a broken one. */
+  let slipsAI=0, slipsDrv=0;
+  const own={'owner-ai':0,'owner-driver':0,'owner-schema':0};
+  allTCs.forEach(tc=>{
+    if(CORR_TYPES.includes(tc.status)) counts.corrected++;
+    else counts[tc.status]=(counts[tc.status]||0)+1;
+    (tc.steps||[]).forEach(s=>{if(s.t==='f')slipsAI++;if(s.t==='b')slipsDrv++;});
+    /* Partials carry fault too. Attributing only hard fails reported "0 Driver" on a run whose
+       16 partials were all the same driver push-down limitation. Where the verdict left `owner`
+       unset, infer it from the last failing step the same way the fault table does, so the two
+       panels cannot disagree — a driver rejection is `b`, an AI mistake is `f`. */
+    if(tc.status==='fail'||tc.status==='partial'){
+      const o=ownerOf(tc);
+      if(o&&own[o]!==undefined) own[o]++;
+    }
+  });
+  const unattributed=(counts.fail+counts.partial)-(own['owner-ai']+own['owner-driver']+own['owner-schema']);
+  const total=allTCs.length;
+  /* NOT_APPLICABLE leaves the denominator — it is out of scope, not a miss.
+     NOT_TESTABLE stays in it — we failed to validate it, and that must stay visible. */
+  const inScope=total-counts.na;
+  const noSql=allTCs.filter(tc=>!(tc.observed&&tc.observed.sql)&&!['ne','not_exec','na','nt'].includes(tc.status)).length;
+  const passing=counts.pass+counts.corrected+counts.partial+counts.boundary;
+  const p=pct(passing,inScope);
+  document.getElementById('rate-fill').style.width=p+'%';
+  document.getElementById('rate-pct').textContent=p+'%';
+  /* "96% passing" that silently counts partials reads as a clean run. Say what is inside it. */
+  document.getElementById('rate-frac').textContent=passing+' / '+inScope+' in-scope TCs passing'
+    +(counts.partial?` · includes ${counts.partial} partial`:'')
+    +(noSql?` · ${noSql} recorded no SQL`:'')
+    +(counts.na?` · ${counts.na} N/A excluded`:'');
+  const gClosed=GAPS.filter(g=>g.final_status==='CLOSED').length;
+  /* three clusters, not fourteen loose tiles: outcomes · fault · scope (review L2) */
+  const tile=(n,l,c,extra='')=>`<div class="stat" ${extra}><div class="stat-n"${c?` style="color:${c}"`:''}>${n}</div><div class="stat-l">${l}</div></div>`;
+  const cluster=(title,inner)=>`<div class="stat-group"><div class="stat-group-t">${title}</div><div class="stat-group-b">${inner}</div></div>`;
+  document.getElementById('stats').innerHTML=
+    cluster('Outcomes',
+      tile(total,'Total TCs')+tile(counts.pass,'Pass','var(--pass)')+tile(counts.corrected,'Corrected','#15803d','title="Passed after the AI corrected its own query"')+tile(counts.partial,'Partial','var(--partial)')+tile(counts.boundary,'Blocked','var(--bnd)','title="Valid query the connector, API plan or environment would not serve"')+tile(counts.fail,'Fail','var(--fail)'))
+   +cluster('Whose fault — failures &amp; partials',
+      tile(own['owner-ai'],'AI','var(--fail)','style="border-color:var(--fail)"')+tile(own['owner-driver'],'Driver','var(--driver)','style="border-color:var(--driver)"')+tile(own['owner-schema'],'Schema','var(--schema)','style="border-color:var(--schema)"')
+      +(unattributed>0?tile(unattributed,'Unattributed','var(--fail)','style="border-color:var(--fail)" title="Failures and partials with no fault owner recorded"'):'')
+      /* the parenthetical lives in the tooltip — spelled out on the tile it wrapped to four
+         lines and dragged every neighbouring tile to the same height */
+      +tile(slipsAI,'AI slips','var(--muted)','title="Wrong queries the AI issued then recovered from — recovered, so these did NOT fail"')+tile(slipsDrv,'Driver rejects','var(--muted)','title="Driver rejections the AI worked around — worked around, so these did NOT fail"'))
+   +cluster('Scope',
+      (counts.na?tile(counts.na,'N/A','var(--muted)','title="Not applicable to this connector"'):'')+(counts.nt?tile(counts.nt,'Not testable','var(--schema)'):'')+tile(counts.not_exec+counts.ne,'Not exec','var(--ne)')
+      /* A test that recorded no SQL measured nothing, whatever its verdict says. Without this
+         tile the report showed "0 Not Exec" beside dozens of rows reading "no SQL recorded". */
+      +(noSql?tile(noSql,'No SQL','var(--partial)','title="Executed but produced no query the run could credit — these prove nothing about the connector"'):'')
+      /* coverage belongs to the gap report — one question per document */
+      +(REPORT_KIND==='gap'&&GAPS.length?tile(`${gClosed}/${GAPS.length}`,'Gaps Closed','var(--disc)','style="background:var(--disc-bg);border-color:var(--disc)"'):'')
+      +(REPORT_KIND==='gap'&&FUNNEL?tile(FUNNEL.assessment_confidence+'%','Assessment confidence',FUNNEL.assessment_confidence>=80?'var(--pass)':FUNNEL.assessment_confidence>=60?'var(--partial)':'var(--fail)','title="How much of the semantic model is FACT (1) vs INFERENCE (½) vs UNKNOWN (0). Low = the model guessed a lot."'):''));
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   EXEC BAR
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  /* The verdict banner, its "why this verdict" panel, and the Top Issues / Write Tests panels
+     were removed from the exec-bar at the report owner's request. Top Issues and Write Tests
+     are now rendered at the bottom of the Analysis tab (see tab-failures). */
+  const eb=document.getElementById('exec-bar');
+  if(eb) eb.innerHTML='';
+
+  /* Populate Analysis-tab sections */
+  const tiEl=document.getElementById('top-issues-section');
+  if(tiEl){
+    tiEl.innerHTML=`<ul>${(EXEC_SUMMARY.top_issues||[]).map(i=>{
+      const txt=typeof i==='string'?i:(i&&(i.description||i.text||i.issue))||'';
+      const kind=(i&&i.type)?`<b>${esc(String(i.type).replace(/_/g,' '))}:</b> `:'';
+      return txt?`<li>${kind}${esc(txt)}</li>`:'';
+    }).join('')||'<li style="color:var(--muted)">None recorded.</li>'}</ul>`;
+  }
+  const wtEl=document.getElementById('write-tests-section');
+  if(wtEl){
+    wtEl.innerHTML=`<div style="font-size:11px;line-height:1.55">${esc(EXEC_SUMMARY.not_exec_reason||'')}</div>`
+      +(EXEC_SUMMARY.production_cost_note?`<div style="margin-top:7px;padding-top:6px;border-top:1px solid var(--border)"><h4 style="margin-bottom:3px">💰 Cost Estimate</h4><div style="font-size:11px;line-height:1.55">${esc(EXEC_SUMMARY.production_cost_note)}</div></div>`:'')
+      +(EXEC_SUMMARY.cost_note?`<div style="margin-top:7px;padding-top:6px;border-top:1px solid var(--border)"><div style="font-size:11px;line-height:1.55;color:var(--muted)">${esc(EXEC_SUMMARY.cost_note)}</div></div>`:'');
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   NAV + REPORT (Test Results tab)
+   ═══════════════════════════════════════════════════════════ */
+/* Whose fault — shown on the row itself, so "AI or driver?" needs no second tab. */
+const OWNER_TAG={
+  'owner-ai':    {t:'AI',     c:'own-ai',  title:'AI fault — the agent produced an incorrect query and could not recover'},
+  'owner-driver':{t:'DRIVER', c:'own-drv', title:'Driver / connector fault — the query was valid but the connector rejected or could not serve it'},
+  'owner-schema':{t:'SCHEMA', c:'own-sch', title:'Schema gap — the query was plausible, but the exposed schema made correctness unguessable'},
+  'owner-ok':    null
+};
+function ownerTag(tc){
+  const o=OWNER_TAG[tc.owner];
+  if(!o) return '';
+  if(!['fail','partial','boundary'].includes(tc.status)) return '';
+  return `<div class="own ${o.c}" title="${esc(o.title)}">${o.t}</div>`;
+}
+
+/* Whose fault the message is, read from the message itself. Stage 9 records each step type from
+   the agent's own account of what happened, and an agent that triggered a driver crash still
+   reports it as "my query failed" — which is how a connector defect ends up on screen labelled
+   as an AI mistake. The error text is the more reliable witness, so it decides. Order matters:
+   the first pattern that matches wins, so crashes are recognised before the generic phrases that
+   also appear inside them. */
+const ERR_KINDS=[
+  [/out of bounds|nullpointer|stack ?overflow|internal ?error|unhandled|\bHTTP ?\[?5\d\d/i, 'driver-defect','Driver defect'],
+  [/not responding|timed ?out|timeout|connection (closed|reset|refused)/i,                  'driver-timeout','Server timeout'],
+  [/HTTP ?\[?4\d{4}|premium|cannot access|not authoriz|no permission|forbidden|\b40[13]\b/i,'api-permission','API / permission'],
+  [/is not supported|not implemented|unsupported/i,                                          'driver-limit', 'Unsupported'],
+  [/is required|must be specified|specify one of|mandatory/i,                                'driver-filter','Filter required'],
+  [/invalid column name|invalid table|is not recognized|syntax error|unknown column/i,        'ai-error',     'Agent error'],
+  [/\b0 rows\b|no data|empty result|headers only/i,                                           'empty',        'Empty result'],
+];
+function classifyError(t){
+  const s=String(t||'');
+  for(const [re,k,label] of ERR_KINDS) if(re.test(s)) return {k,label};
+  return {k:'other',label:'Unclassified'};
+}
+/* A driver crash, a permission wall and a mandatory-filter rule are all things the agent could
+   not have written its way out of — none of them is the agent sending bad SQL. An empty result
+   is not in this set: the query ran. */
+const DRIVER_KINDS=new Set(['driver-defect','driver-timeout','api-permission','driver-limit','driver-filter']);
+
+/* What actually happened in this step, independent of how Stage 9 typed it.
+   Stage 9's "boundary" covers two events that a reader must not see as one: the connector
+   refusing the query, and the connector answering it with nothing because the environment holds
+   no such data. Reporting the second as "the driver rejected it" accuses the connector of a
+   defect over an empty table — so the result text decides, and an empty answer is its own,
+   blameless outcome. */
+function stepKind(s){
+  if(s.t==='p') return 'ok';
+  if(s.t==='d') return 'discovery';
+  const kind=classifyError(s.e||'').k;
+  if(DRIVER_KINDS.has(kind)) return kind;
+  if(kind==='ai-error') return 'ai-error';
+  /* no error text, or nothing recognisable in it — fall back to the result line */
+  const rk=classifyError(s.r||'').k;
+  if(DRIVER_KINDS.has(rk)) return rk;
+  if(rk==='empty') return 'empty';
+  /* A step carrying no error text at all, whose result does not read as a failure either, is the
+     agent finding something out — "schema corrected", "columns confirmed". Stage 9 sometimes
+     types those as boundary, and calling them a rejection puts the connector's name against a
+     line where nothing was rejected. */
+  if(!s.e) return 'discovery';
+  return s.t==='f'?'ai-error':'rejected';
+}
+const STEP_STYLE={
+  'ok':            {cls:'step-p',lbl:'✅ Correct query',                                  pre:''},
+  'discovery':     {cls:'step-d',lbl:'🔍 Schema discovery / self-correction',             pre:''},
+  'ai-error':      {cls:'step-f',lbl:'❌ Wrong attempt — the agent sent incorrect SQL',    pre:'Error: '},
+  'driver-defect': {cls:'step-f',lbl:'❌ Driver defect — the connector itself failed',     pre:'Driver error: '},
+  'driver-timeout':{cls:'step-f',lbl:'❌ Server timeout — the connector did not respond',   pre:'Driver error: '},
+  'api-permission':{cls:'step-b',lbl:'⚠️ Blocked — the API refused on permissions/plan',  pre:'API error: '},
+  'driver-limit':  {cls:'step-b',lbl:'⚠️ Unsupported — the driver does not implement this',pre:'Driver error: '},
+  'driver-filter': {cls:'step-b',lbl:'⚠️ Driver requires a filter this query did not have',pre:'Driver error: '},
+  'rejected':      {cls:'step-b',lbl:'⚠️ Valid SQL — the connector or driver rejected it', pre:'Driver error: '},
+  'empty':         {cls:'step-e',lbl:'○ Query ran — no matching rows in this environment', pre:''},
+};
+
+/* A step whose "failure" is the agent declining to query at all is not a wrong answer — it is
+   the absence of one, and reading it as an AI error overstates the failure count. */
+function isNoCall(s){
+  if(s.t!=='f') return false;
+  const t=String(s.e||s.q||'');
+  return /^(NOT EXEC|Blocked|Safety control|Skipped|Would chain|Not attempted|Not executed|Cannot)\b/i.test(t);
+}
+
+/* "❌ Fail" does not tell a reader whose fault it was or what happened next. These labels name
+   the event in full, which is the difference between a log and a report. */
+/* Stage 9 puts a prose note where the query goes when the agent summarised several calls
+   ("TaskDependencies for 3 more task IDs"). Set in a monospace code block it reads as SQL that
+   was actually sent, so only text that looks like a query or a tool call is shown as code. */
+function looksLikeQuery(q){
+  return /^\s*(select|insert|update|delete|exec|execute|call|with|show|describe|get[A-Z])/i.test(String(q||''))
+      || /^\s*\w+\s*\(/.test(String(q||''));
+}
+/* Shorthand Stage 9 wrote in place of the query — "SELECT ... FROM Portfolios WHERE …",
+   "JOIN using tte.UserId=u.Id". Set in a plain code block it reads as the SQL the agent sent,
+   and a reader copying it out to reproduce a bug would find it does not run. Say what it is. */
+function isAbbrev(q){
+  const s=String(q||'');
+  return /\.\.\.|…/.test(s)||/^\s*(WHERE|AND|OR|ORDER BY|GROUP BY|LIMIT|JOIN)\b/i.test(s);
+}
+function queryHtml(s){
+  if(!s.q) return '';
+  if(!looksLikeQuery(s.q)&&!isAbbrev(s.q)) return `<div class="act">${esc(s.q)}</div>`;
+  if(!isAbbrev(s.q)) return `<code>${esc(s.q)}</code>`;
+  return `<code class="q-abbrev">${esc(s.q)}</code>`
+    +`<div class="q-note" title="Stage 9 recorded a shortened form of this query; the verbatim text is not in the run log.">✂ abbreviated in the execution log — not the verbatim query</div>`;
+}
+function stepHtml(s){
+  if(isNoCall(s)) return `<div class="step step-d"><div class="step-label">🚫 No MCP call made — the agent chose not to query</div><div class="act">${esc(s.a||s.q||s.e||'')}</div></div>`;
+  const k=stepKind(s), st=STEP_STYLE[k]||STEP_STYLE.rejected;
+  const qHtml=queryHtml(s);
+  /* A discovery step has no query and no result — its whole content is the narration of what the
+     agent went and looked up. Prefixing that with "Result:" read as output of a query that was
+     never sent, so discovery narrates in prose and only real queries get a Result line. */
+  if(k==='discovery'){
+    const body=[s.a,s.r].filter(Boolean).map(x=>`<div class="act">${esc(x)}</div>`).join('');
+    return `<div class="step ${st.cls}"><div class="step-label">${st.lbl}</div>${body}${qHtml}</div>`;
+  }
+  /* an empty answer is the result, not an error — it gets the neutral Result line, never "Error:" */
+  const resCls=k==='empty'?'act':'res';
+  return `<div class="step ${st.cls}"><div class="step-label">${st.lbl}</div>${s.a?`<div class="act">${esc(s.a)}</div>`:''}${qHtml}${s.e?`<div class="err">${st.pre}${esc(s.e)}</div>`:''}${s.r?`<div class="${resCls}">${k==='empty'?'':'Result: '}${esc(s.r)}</div>`:''}</div>`;
+}
+
+/* What the agent walked away knowing. Stage 9 writes this per test and nothing rendered it, so
+   the single most informative sentence about each test was sitting unused in the checkpoint. */
+function takeawayHtml(tc){
+  const n=tc.notes||tc.dq_observation||tc.nt_reason||'';
+  if(!n) return '';
+  /* A test that was never dispatched taught the agent nothing — it never ran. Labelling its
+     reason "what the agent learned" read as a finding from execution, when it is the opposite:
+     a deliberate decision not to execute, made at planning time. */
+  const never=tc.status==='not_exec'||tc.status==='nt'||tc.executable===false;
+  const lbl=never?'⏸ Planned, deliberately not executed':'💡 What the agent learned';
+  return `<div class="step step-take"><div class="step-label">${lbl}</div><div class="act">${esc(n)}</div></div>`;
+}
+
+/* What the plan knew before the run: this object needs a premium plan, this column's
+   documentation is wrong, this procedure cannot be undone. Without it a BLOCKED verdict looks
+   like a connector defect when the account tier was the cause, and the reader has no way to tell
+   the two apart. */
+const RISK_LABEL={
+  premium_required:    ['needs premium plan','prem'],
+  metadata_defect:     ['documented schema is wrong','meta'],
+  required_filter:     ['driver requires a filter','filt'],
+  mutating:            ['writes data','wr'],
+  irreversible_write:  ['write cannot be undone','irr'],
+  pushdown_risk:       ['pushdown may fail','push'],
+  auth_utility:        ['auth utility','auth'],
+  session_state_isolate:['needs isolated session','sess'],
+};
+function riskHtml(tc){
+  const all=tc.risk_flag_all&&tc.risk_flag_all.length?tc.risk_flag_all:(tc.risk_flag?[tc.risk_flag]:[]);
+  if(!all.length) return '';
+  return `<div class="flags">${all.map(f=>{
+    const [label,cls]=RISK_LABEL[f]||[String(f).replace(/_/g,' '),'oth'];
+    return `<span class="flag f-${cls}" title="${esc(f)}">${esc(label)}</span>`;
+  }).join('')}</div>`;
+}
+
+/* The one-line summary above the steps: how many steps, and what went wrong on the way. */
+function journeyTally(tc){
+  const st=(tc.steps||[]).filter(s=>!isNoCall(s));
+  const k=st.map(stepKind);
+  return {n:(tc.steps||[]).length, noCall:(tc.steps||[]).filter(isNoCall).length,
+          slips:k.filter(x=>x==='ai-error').length,
+          rejects:k.filter(x=>DRIVER_KINDS.has(x)||x==='rejected').length,
+          empties:k.filter(x=>x==='empty').length};
+}
+function journeyLabel(tc){
+  if(!(tc.steps||[]).length) return '';
+  const t=journeyTally(tc);
+  if(t.noCall&&t.noCall===t.n) return `${t.n} step${t.n>1?'s':''} — 🚫 no MCP call made (agent reasoning only)`;
+  const bits=[];
+  if(t.slips)   bits.push(`${t.slips} AI error${t.slips>1?'s':''} self-corrected`);
+  if(t.rejects) bits.push(`${t.rejects} blocked by driver/API`);
+  if(t.empties) bits.push(`${t.empties} returned no rows`);
+  return `${t.n} step${t.n>1?'s':''}${bits.length?' — '+bits.join(' — '):' — direct success'}`;
+}
+
+/* Which suite, and how real the realism judge found it. A conformance check is labelled as one so
+   nobody reads a join test as a business use case. */
+function suiteHtml(tc){
+  if(tc.suite==='business'){
+    const r=tc.realism&&typeof tc.realism.score==='number'?` · realism ${tc.realism.score}/5`:'';
+    return `<div><span class="sc-badge" title="A business scenario: a persona with a goal${tc.persona?' — '+esc(tc.persona):''}">Business scenario${r}</span></div>`;
+  }
+  if(tc.suite==='conformance') return `<div><span class="sc-badge emp" title="A connector check (join, pattern, procedure, write) — not a business use case">Conformance check</span></div>`;
+  return '';
+}
+
+/* Every TC carries process_group, roles[], group_type, target_objects[] and gap_ids[],
+   so each lens below is a regroup of the same data — no TC is generated twice. */
+const LENSES={
+  process: {label:'Business Process', keys:tc=>[tc.process_group||tc._group||'Ungrouped']},
+  role:    {label:'Role',             keys:tc=>(tc.roles&&tc.roles.length?tc.roles:['Unassigned'])},
+  persona: {label:'Persona',          keys:tc=>{
+             /* tc.persona is what the plan records; group_type 'persona' was never produced,
+                so until 2.2 this lens put every test in one bucket */
+             if(tc.persona) return [tc.persona];
+             /* fall back to the authored group title so the lens still works when a TC
+                did not repeat its group_type into the checkpoint */
+             const isP=tc.group_type==='persona'||/^persona\b/i.test(tc._group||tc.group||'');
+             return [isP?(tc._group||tc.group||'Persona'):'Not persona-driven'];
+           }},
+  object:  {label:'Object',           keys:tc=>(tc.target_objects&&tc.target_objects.length?tc.target_objects:['No object recorded'])},
+  suite:   {label:'Suite',            keys:tc=>[tc.suite==='business'?'Business Scenarios':tc.suite==='conformance'?'Connector Conformance':'Unclassified']},
+  gap:     {label:'Gap Category',     keys:tc=>{
+             const ids=tc.gap_ids||[];
+             if(!ids.length) return ['No gap cited'];
+             const cats=[...new Set(ids.map(id=>{
+               const g=GAPS.find(x=>x.id===id); return g?g.category:'Unknown';
+             }))];
+             return cats;
+           }}
+};
+
+function buildGroups(lens){
+  if(lens==='process'&&GROUPS.length) return GROUPS;     // authored grouping wins by default
+  const fn=(LENSES[lens]||LENSES.process).keys;
+  const buckets=new Map();
+  GROUPS.forEach(g=>(g.tcs||[]).forEach(raw=>{
+    const tc={...raw, _group:g.title};        // carry the authored group for lens fallbacks
+    fn(tc).forEach(k=>{ if(!buckets.has(k)) buckets.set(k,[]); buckets.get(k).push(tc); });
+  }));
+  return [...buckets.entries()]
+    .sort((a,b)=>b[1].length-a[1].length)
+    .map(([title,tcs],i)=>({id:'lens-'+i, title, desc:`${tcs.length} test case${tcs.length===1?'':'s'}`, tcs}));
+}
+
+function renderResults(lens){
+  const groups=buildGroups(lens);
+  const tcCount=groups.reduce((s,g)=>s+(g.tcs||[]).length,0);
+  /* Say out loud what the regroup did. One bucket is a legitimate result, but without this
+     it is indistinguishable from a button that did nothing. */
+  const ind=document.getElementById('groupby-count');
+  if(ind) ind.innerHTML=`<strong>${groups.length}</strong> group${groups.length===1?'':'s'} · `
+    +`<strong>${tcCount}</strong> card${tcCount===1?'':'s'} by <strong>${esc((LENSES[lens]||{}).label||lens)}</strong>`
+    +(groups.length===1?` <span style="color:var(--partial)">— every test falls in one bucket here</span>`:'');
+  document.getElementById('nav').innerHTML=
+    groups.map(g=>`<a href="#${g.id}">${esc(g.title)}</a>`).join('');
+  document.getElementById('report').innerHTML=groups.map(g=>{
+    const cnts={pass:0,corrected:0,partial:0,fail:0,boundary:0,not_exec:0,ne:0,na:0,nt:0};
+    g.tcs.forEach(tc=>{if(CORR_TYPES.includes(tc.status))cnts.corrected++;else cnts[tc.status]=(cnts[tc.status]||0)+1;});
+    let badges='';
+    if(cnts.pass)      badges+=`<span class="badge p-b">${cnts.pass} Pass</span>`;
+    if(cnts.corrected) badges+=`<span class="badge pcorr-b">${cnts.corrected} Corrected ✓</span>`;
+    if(cnts.partial)   badges+=`<span class="badge part-b">${cnts.partial} Partial</span>`;
+    if(cnts.fail)      badges+=`<span class="badge f-b">${cnts.fail} Fail</span>`;
+    if(cnts.boundary)  badges+=`<span class="badge bnd-b">${cnts.boundary} Blocked</span>`;
+    if(cnts.na)        badges+=`<span class="badge st-na">${cnts.na} N/A</span>`;
+    if(cnts.nt)        badges+=`<span class="badge st-nt">${cnts.nt} Not Testable</span>`;
+    if(cnts.ne+cnts.not_exec) badges+=`<span class="badge ne-b">${cnts.ne+cnts.not_exec} Not Exec</span>`;
+    const tcsHtml=g.tcs.map(tc=>{
+      const st=STATUS_MAP[tc.status]||{cls:'ne-b',label:'?'};
+      /* A dozen raw GAP ids told the reader nothing and crowded out the prompt. The ids are
+         pipeline bookkeeping; the reader needs the count, and the gap report has the detail. */
+      const gid=tc.gap_ids||[];
+      /* The gap ids are pipeline bookkeeping and the gap report already carries them in full.
+         On the results table they crowded out the prompt, so keep them only as a hover. */
+      const gaps=(tc.priority||gid.length)?`<div title="${esc(gid.join(' ')||'')}" style="margin-top:3px;font-size:9.5px;color:var(--muted)">${esc(tc.priority||'')}</div>`:'';
+      /* What the agent actually produced — coverage is credited from this, not from the plan. */
+      const o=tc.observed;
+      const ran=o?`<div class="observed"><span class="obs-k">Ran</span>${(o.patterns||[]).map(p=>`<span class="obs-p">${esc(p)}</span>`).join('')}${
+        (o.divergence||[]).length?`<div class="obs-div">⚠ ${(o.divergence).map(esc).join(' · ')}</div>`:''}</div>`
+        : (tc.status&&!['ne','not_exec','na','nt'].includes(tc.status)
+            ? `<div class="observed"><span class="obs-k obs-miss">no SQL recorded</span><span class="obs-div">— no coverage credited</span></div>` : '');
+      /* corrections and driver rejections are the story of the row — surface them next to the
+         use case so the table can be skimmed without opening the journey column */
+      const jSteps=tc.steps||[];
+      const t_=journeyTally(tc);
+      const marks=(t_.slips?`<div><span class="sc-badge">↺ ${t_.slips} corrected</span></div>`:'')
+                 +(t_.rejects?`<div><span class="sc-badge drv">⚠️ ${t_.rejects} blocked</span></div>`:'')
+                 +(t_.empties?`<div><span class="sc-badge emp">○ ${t_.empties} no rows</span></div>`:'');
+      const jl=journeyLabel(tc);
+      /* a TC the checkpoint recorded without a prompt is a hole in the record, not an empty cell */
+      const promptCell=tc.prompt?`"${esc(tc.prompt)}"`:'<span style="color:var(--muted);font-style:italic">no prompt recorded for this test</span>';
+      return `<div class="tc">
+<div><div class="col-id">${esc(tc.id)}</div>${gaps}${riskHtml(tc)}</div>
+<div><div class="col-uc">${esc(tc.uc||'')}</div>${suiteHtml(tc)}${marks}</div>
+<div><div class="col-prompt">${promptCell}</div></div>
+<div>${jl?`<div class="journey-label">${esc(jl)}</div>`:''}<div class="journey">${jSteps.map(stepHtml).join('')}${takeawayHtml(tc)}</div>${ran}</div>
+<div class="col-status"><span class="badge ${st.cls}">${st.label}</span>${ownerTag(tc)}</div>
+<div class="col-time">${esc(tc.time||'—')}</div>
+</div>`;
+    }).join('');
+    return `<div class="group" id="${g.id}">
+<div class="gh"><div><div class="gh-title">${esc(g.title)}</div>${g.desc?`<div class="gh-desc">${esc(g.desc)}</div>`:''}</div><div class="gh-badges">${badges}</div></div>
+<div class="tbl-head"><span>TC ID</span><span>Use Case</span><span>Prompt</span><span>AI Journey</span><span>Status</span><span>Time</span></div>
+${tcsHtml}</div>`;
+  }).join('');
+}
+
+function regroup(lens,btn){
+  const bar=document.getElementById('groupby-bar');
+  if(bar) bar.querySelectorAll('.sch-filter').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderResults(lens);
+}
+
+/* A lens whose field the checkpoint never recorded collapses into one placeholder bucket.
+   Left alone that reads as "all tests share one role", which is worse than no view at all —
+   so detect it and say plainly that the data is missing. */
+const LENS_FALLBACKS=new Set(['Unassigned','No object recorded','Not persona-driven','Ungrouped','No gap cited','Unclassified']);
+const LENS_FIELD={role:'roles[]',object:'target_objects[]',persona:'persona',process:'process_group',gap:'gap_ids[]',suite:'suite'};
+function lensUsable(lens){
+  const tcs=GROUPS.flatMap(g=>(g.tcs||[]).map(tc=>({...tc,_group:g.title})));
+  if(!tcs.length) return false;
+  const keys=new Set(tcs.flatMap(tc=>LENSES[lens].keys(tc)));
+  return [...keys].some(k=>!LENS_FALLBACKS.has(k));
+}
+(function(){
+  const bar=document.getElementById('groupby-bar');
+  if(!bar) return;
+  const missing=[];
+  bar.querySelectorAll('.sch-filter').forEach(btn=>{
+    const m=(btn.getAttribute('onclick')||'').match(/regroup\('(\w+)'/);
+    if(!m) return;
+    const lens=m[1];
+    if(lensUsable(lens)) return;
+    missing.push(lens);
+    btn.classList.add('lens-off');
+    btn.setAttribute('title',`No ${LENS_FIELD[lens]} recorded on any test case — this view is unavailable.`);
+    btn.setAttribute('onclick','return false');
+  });
+  if(missing.length){
+    const note=document.createElement('div');
+    note.style.cssText='flex-basis:100%;font-size:10.5px;color:var(--fail);padding-top:4px';
+    note.textContent='Unavailable: '+missing.map(l=>`${l} (no ${LENS_FIELD[l]} in checkpoint)`).join(' · ');
+    bar.appendChild(note);
+  }
+})();
+
+renderResults('process');
+
+/* ═══════════════════════════════════════════════════════════
+   FAILURE ANALYSIS TAB
+   ═══════════════════════════════════════════════════════════ */
+/* A section the model never wrote is not a section with nothing in it. Saying "No failures
+   recorded" on a run with 16 partials turns a missing narrative into a clean bill of health. */
+function notGen(name){
+  return `<p style="padding:8px 10px;margin:0 0 12px;font-size:12px;color:var(--partial);background:var(--partial-bg,#fff7ed);border:1px solid var(--partial);border-radius:6px">
+    <b>Not generated.</b> ${esc(name)} was not written for this run — usually the run stopped early or ran short of context.
+    This is not a statement that nothing was found.</p>`;
+}
+
+/* ── Driver bug report ────────────────────────────────────────────────────
+   A fault table tells a reader what broke. It does not let a driver engineer reproduce it —
+   for that they need the exact SQL, the query id the server logged it under, what was expected
+   and what came back. This renders that, in the shape the connector teams already file bugs in. */
+const QID_RE=/Query ID:?\s*\(?([0-9a-f]{6,8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[0-9a-f]{6,})\)?/i;
+function qidOf(){for(const t of arguments){const m=QID_RE.exec(String(t||''));if(m)return m[1];}return '';}
+function clip(s,n){s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s;}
+
+/* Detect the catalog.schema prefix (e.g. "[Asana1].[Asana]") by scanning observed.sql values
+   for a qualified 3-part table reference. Returns the prefix string or null. */
+function detectCatalogPrefix(){
+  const tcs=GROUPS.flatMap(g=>g.tcs||[]);
+  for(const tc of tcs){
+    const sql=(tc.observed&&tc.observed.sql)||'';
+    const m=/\b(?:FROM|JOIN)\s+(\[\w+\]\.\[\w+\])\.\[/i.exec(sql);
+    if(m) return m[1];
+  }
+  return null;
+}
+const CATALOG_PREFIX=detectCatalogPrefix();
+
+/* Add catalog.schema prefix to every unqualified [TableName] after FROM/JOIN. */
+function addCatalogPrefix(sql){
+  if(!CATALOG_PREFIX||!sql) return sql;
+  return sql.replace(/\b(FROM|JOIN)\s+(\[[\w ]+\])(?!\s*\.\s*\[)/gi,
+    (_,kw,tbl)=>`${kw} ${CATALOG_PREFIX}.${tbl}`);
+}
+
+/* Replace @param placeholders with concrete values extracted from step narrative text.
+   Maps each @param to its column via the WHERE clause, then scans step a/q text for a
+   concrete value for that column. */
+function resolveParams(sql,tc){
+  if(!/@\w+/.test(sql)) return {sql,changed:false};
+  const paramToCol={};
+  const wpRe=/\[?(\w+)\]?\s*(?:[><=!]{1,2}|IN\s*\()\s*@(\w+)/gi;
+  let m;
+  while((m=wpRe.exec(sql))!==null) paramToCol[m[2].toLowerCase()]=m[1];
+  const colVal={};
+  const allText=(tc.steps||[]).map(s=>(s.a||'')+' '+(s.q||'')).join('\n');
+  const cvRe=/\[?(\w+)\]?\s*[><=!]{1,2}\s*(?:'([^']+)'|(\d+(?:\.\d+)?))/gi;
+  while((m=cvRe.exec(allText))!==null){
+    const k=m[1].toLowerCase(); if(!colVal[k]) colVal[k]=m[2]!==undefined?`'${m[2]}'`:m[3];
+  }
+  let changed=false;
+  const out=sql.replace(/@(\w+)/g,(match,p)=>{
+    const col=paramToCol[p.toLowerCase()];
+    const v=col&&colVal[col.toLowerCase()];
+    if(v){changed=true;return v;}
+    return match;
+  });
+  return {sql:out,changed};
+}
+
+function buildBugReport(){
+  const tcs=GROUPS.flatMap(g=>g.tcs||[]);
+  const worked=[],failed=[];
+
+  for(const tc of tcs){
+    const steps=tc.steps||[];
+
+    /* Working queries */
+    for(const s of steps) if(s.t==='p'&&s.q&&looksLikeQuery(s.q)) worked.push({tc,q:s.q,result:s.r||'returned rows'});
+    if(!steps.some(s=>s.t==='p')&&tc.observed&&tc.observed.sql&&PASSY.includes(tc.status))
+      worked.push({tc,q:tc.observed.sql,result:tc.answer?clip(tc.answer,160):'succeeded'});
+
+    if(!['fail','partial'].includes(tc.status)) continue;
+
+    /* ── Exact query that did NOT work ────────────────────────────────────────
+       fail TCs:    first step with real SQL (q) + error (e) — exact query as sent.
+       partial TCs: tc.expected_sql — the planned query that hit the connector limitation.
+                   Never use a step SQL for partial: the step may be the workaround that
+                   also timed out transiently, making a working query look like a failure.
+       resolveParams replaces @placeholders; addCatalogPrefix fills missing catalog names. */
+    let failingSql='',sqlSource='',errText='';
+
+    if(tc.status==='partial'){
+      if(tc.expected_sql){failingSql=tc.expected_sql;sqlSource='expected';}
+      else{
+        /* scan error-step narratives for SQL-like text (inc. EXECUTE/EXEC for procedure calls) */
+        const errSteps=steps.filter(s=>s.e&&!s.r);
+        const sqlRe=/(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|CALL)\s+\S[^\n]{5,}/i;
+        for(const s of errSteps){const m=sqlRe.exec(s.a||'');if(m){failingSql=m[0].trim();sqlSource='narrative';break;}}
+        /* also try any step that has SQL + error (inc. procedure calls) */
+        if(!failingSql){const sq=steps.find(s=>s.q&&s.e&&(looksLikeQuery(s.q)||/^\s*EXEC(?:UTE)?\s+\w/i.test(s.q)));if(sq){failingSql=sq.q;sqlSource='step-partial';}}
+        /* try tc.notes for SQL fragments */
+        if(!failingSql){const m=sqlRe.exec(tc.notes||'');if(m){failingSql=m[0].trim();sqlSource='notes-sql';}}
+        /* last resort: show what the step attempted in plain language — NOT the working workaround SQL */
+        if(!failingSql){const errA=steps.filter(s=>s.e||s.t==='b').map(s=>s.a||'').filter(Boolean)[0];if(errA){failingSql=errA;sqlSource='notes-desc';}}
+        if(!failingSql&&tc.observed&&tc.observed.sql){failingSql=tc.observed.sql.split(';')[0].trim();sqlSource='workaround';}
+      }
+      errText=tc.notes||steps.filter(s=>s.e).map(s=>s.e).find(e=>/timeout|not respond|distinct|unsupport|not support|required/i.test(e))||'connector limitation — agent used workaround';
+    } else {
+      /* broaden to catch EXECUTE/EXEC procedure calls, not just SELECT/INSERT */
+      const stepWithQE=steps.find(s=>s.q&&s.e&&!isNoCall(s)&&(looksLikeQuery(s.q)||/^\s*EXEC(?:UTE)?\s+\w/i.test(s.q)));
+      if(stepWithQE){failingSql=stepWithQE.q;sqlSource='step';errText=stepWithQE.e;}
+      else{
+        const errSteps=steps.filter(s=>s.e&&!s.r);
+        const sqlRe=/(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|CALL)\s+\S[^\n]{5,}/i;
+        for(const s of errSteps){const m=sqlRe.exec(s.a||'');if(m){failingSql=m[0].trim();sqlSource='narrative';break;}}
+        /* any step with q+e even if not SQL-shaped (covers procedure calls not matched above) */
+        if(!failingSql){const anyQE=steps.find(s=>s.q&&s.e&&!isNoCall(s));if(anyQE){failingSql=anyQE.q;sqlSource='step';errText=anyQE.e||'';}}
+        if(!failingSql) failingSql=(tc.observed&&tc.observed.sql)||tc.expected_sql||'';
+        /* try tc.notes for a SQL fragment */
+        if(!failingSql){const m=sqlRe.exec(tc.notes||'');if(m){failingSql=m[0].trim();sqlSource='notes-sql';}}
+        const errStep=errSteps[0]||null;
+        errText=errText||(errStep?(errStep.e||errStep.a||''):'');
+      }
+      if(!errText) errText=tc.notes||'no error text recorded';
+    }
+
+    const rp=resolveParams(failingSql,tc);
+    const finalSql=addCatalogPrefix(rp.sql);
+    const kind=tc.status==='partial'?'driver-limit'
+              :tc.owner==='owner-driver'?classifyError(errText).k||'rejected'
+              :tc.owner==='owner-schema'?'driver-filter'
+              :'rejected';
+    const transient=tc.status!=='partial'&&/rate.?limit|throttl|too many req|timeout|timed.?out|connection|ECONNRESET|503|429/i.test(errText);
+    failed.push({tc,kind,q:finalSql,sqlSource,paramsResolved:rp.changed,isPartial:tc.status==='partial',
+                 prompt:clip(tc.prompt,160)||tc.uc||'query to succeed',
+                 actual:errText,notes:tc.notes||'',transient,expectedSql:tc.expected_sql||''});
+  }
+  return {worked,failed};
+}
+
+/* One driver limitation hit by sixteen tests is one bug, not sixteen. Group by the shape of the
+   message so the summary a driver engineer reads is a list of defects, not a list of events —
+   and order it so the rows they own come before the ones they do not. */
+const KIND_LABEL={'driver-defect':'Driver defect','driver-timeout':'Server timeout','driver-limit':'Unsupported by driver',
+  'driver-filter':'Filter required','api-permission':'API / permission','rejected':'Rejected by connector',
+  'ai-error':'Agent error','empty':'No rows returned'};
+/* Plain-English one-liners shown to any reader, before the technical detail. */
+const KIND_PLAIN={
+  'driver-defect':  'The connector returned an error on a valid query — looks like a connector bug.',
+  'driver-timeout': 'The connector stopped responding. This is likely temporary — try the query again manually.',
+  'driver-limit':   'The connector does not support this type of query. The data exists but cannot be retrieved this way.',
+  'driver-filter':  'This query needs a required filter (like a Project ID or Workspace ID) that was not included. Add the filter and it should work.',
+  'api-permission': 'Access was denied — the account may not have permission, or this feature requires a higher plan.',
+  'rejected':       'The connector refused the query.',
+  'ai-error':       'The agent sent incorrect SQL.',
+  'empty':          'The query ran but returned no matching rows.',
+};
+const KIND_RANK={'driver-defect':0,'driver-timeout':1,'driver-limit':1,'driver-filter':2,'api-permission':3,'rejected':4,'ai-error':5,'empty':6};
+function brokenBehaviors(failed){
+  const m=new Map();
+  for(const f of failed){
+    const key=String(f.actual).replace(/'[^']*'/g,"'…'").replace(/\b\d{6,}\b/g,'…')
+      .replace(/\(Query ID[^)]*\)/ig,'').replace(/\b\d+ rows?\b/ig,'N rows').trim().slice(0,140);
+    if(!m.has(key)) m.set(key,{text:clip(f.actual,220),ids:new Set(),kind:f.kind});
+    const r=m.get(key); r.ids.add(f.tc.id);
+    if((KIND_RANK[f.kind]??9)<(KIND_RANK[r.kind]??9)) r.kind=f.kind;
+  }
+  return [...m.values()].map(r=>({...r,ids:[...r.ids]}))
+    .sort((a,b)=>(KIND_RANK[a.kind]??9)-(KIND_RANK[b.kind]??9)||b.ids.length-a.ids.length);
+}
+
+/* Recompute CAPABILITY_COVERAGE.issued from observed GROUPS data.
+   The static value from coverage.json is always 0 when credit-coverage.mjs
+   doesn't populate the tc_ids field — so count unique TCs per verb here. */
+if(typeof GROUPS!=='undefined'&&typeof CAPABILITY_COVERAGE!=='undefined'){
+  const tcs=GROUPS.flatMap(g=>g.tcs||[]);
+  const verbSets={select:new Set(),insert:new Set(),update:new Set(),execute:new Set()};
+  for(const tc of tcs){
+    const sqls=[(tc.observed&&tc.observed.sql)||''].concat((tc.steps||[]).map(s=>s.q||''));
+    for(const q of sqls){
+      const verb=(q.trim().split(/\s+/)[0]||'').toLowerCase();
+      if(verb==='select') verbSets.select.add(tc.id);
+      else if(verb==='insert') verbSets.insert.add(tc.id);
+      else if(verb==='update') verbSets.update.add(tc.id);
+      else if(verb==='execute'||verb==='exec'||verb==='call') verbSets.execute.add(tc.id);
+    }
+  }
+  CAPABILITY_COVERAGE.forEach(r=>{const s=verbSets[r.cap.toLowerCase()];if(s) r.issued=s.size;});
+}
+
+/* What the connector says it can do, beside what the run actually sent. A run that issues 118
+   SELECTs and zero INSERTs against a connector advertising insert is a read assessment, and the
+   report has to say so rather than presenting one number over an unstated denominator. */
+(function(){
+  const el=document.getElementById('capcov');
+  if(!el) return;
+  const rows=(typeof CAPABILITY_COVERAGE!=='undefined'&&CAPABILITY_COVERAGE)||[];
+  if(!rows.length){ el.innerHTML='<p style="font-size:12px;color:var(--muted)">No capability metadata recorded for this connector.</p>'; return; }
+  const untested=rows.filter(r=>!r.issued);
+  el.innerHTML=(untested.length
+      ?`<div class="capcov-warn"><b>${untested.length} advertised capabilit${untested.length>1?'ies were':'y was'} never exercised:</b> `
+       +`${untested.map(r=>esc(r.cap)).join(', ')}. Every percentage in this report is a percentage of the rest.</div>`
+      :'<div class="capcov-ok">Every advertised capability was exercised at least once.</div>')
+    +`<div class="bug-scroll"><table class="bug-tbl"><thead><tr><th>Capability</th><th>Advertised</th><th>Tests planned</th><th>Statements issued</th><th>Status</th></tr></thead><tbody>`
+    +rows.map(r=>`<tr>
+      <td class="bug-id">${esc(r.cap.toUpperCase())}</td>
+      <td>yes</td>
+      <td>${r.planned||0}</td>
+      <td>${r.issued||0}</td>
+      <td>${r.issued?'<span class="bug-k k-empty" style="background:var(--pass-bg);color:var(--pass);border-color:var(--pass)">exercised</span>'
+                    :'<span class="bug-k k-driver-defect">never exercised</span>'}</td></tr>`).join('')
+    +'</tbody></table></div>';
+})();
+
+(function(){
+  const el=document.getElementById('bug-report');
+  if(!el) return;
+  const {worked,failed}=buildBugReport();
+  if(!worked.length&&!failed.length){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">No queries were recorded for this run.</p>';
+    return;
+  }
+  const meta=`<div class="bug-meta">Connector: <b>${esc(CONNECTOR)}</b> &nbsp;|&nbsp; Run: <b>${esc((RUN_META||{}).run_id||'—')}</b>
+    &nbsp;|&nbsp; Generated: <b>${esc(String((RUN_META||{}).generated_at||'').slice(0,10))}</b>
+    &nbsp;|&nbsp; Agent used: <b>${esc(((RUN_META||{}).models||{}).under_test||(RUN_META||{}).model||'—')}</b>
+    <div style="margin-top:6px;color:var(--muted);font-weight:400">Every query below was issued through the MCP tool against the live connection and is reproducible exactly as written.</div></div>`;
+
+  const brk=brokenBehaviors(failed);
+  const owned=brk.filter(b=>DRIVER_KINDS.has(b.kind)||b.kind==='rejected').length;
+  const summary=brk.length?`<div class="bug-h">Summary &nbsp;<span class="bug-n">${owned} issue${owned!==1?'s':''} for the connector team</span></div>
+    <ol class="bug-sum">${brk.slice(0,14).map(b=>`<li>
+      <span class="bug-k k-${esc(b.kind)}">${esc(KIND_LABEL[b.kind]||b.kind)}</span>
+      <span style="font-weight:600">${esc(KIND_PLAIN[b.kind]||b.text)}</span>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(clip(b.text,180))}</div>
+      <span class="bug-ids">(${b.ids.slice(0,8).join(', ')}${b.ids.length>8?` +${b.ids.length-8}`:''})</span>
+    </li>`).join('')}</ol>`:'';
+
+  /* driver-owned rows first — the reader of this section is usually the person who has to fix them */
+  const fsorted=failed.map((f,i)=>({...f,n:i+1})).sort((a,b)=>(KIND_RANK[a.kind]??9)-(KIND_RANK[b.kind]??9)||a.n-b.n);
+  const failTbl=failed.length?`<div class="bug-h bug-h-f">❌ Queries the connector would not serve &nbsp;<span class="bug-n">${failed.length}</span></div>
+    <div class="bug-note" style="margin-bottom:8px">
+      <b>What this section shows:</b> the exact SQL sent to the driver and what the driver returned.
+      Attribution is based on the error pattern at runtime — not re-verification.
+      <br><span style="color:var(--partial)">⟳ Transient</span> = rate-limit, timeout, or connection drop; the query likely works on manual retry.
+      <span style="color:#1d4ed8">↪ Workaround used</span> = agent found alternate SQL; the planned query above is what the connector couldn't serve.
+    </div>
+    <div class="bug-scroll"><table class="bug-tbl"><thead><tr><th>ID</th><th>Type</th><th>Observed SQL (sent to driver)</th><th>Business question</th><th>Error / Driver response</th><th>Notes</th></tr></thead><tbody>
+    ${fsorted.map((f,i)=>{
+      const transientBadge=f.transient?` <span class="bug-k" style="background:#fef3c7;color:#92400e;border-color:#d97706;font-size:10px" title="Rate-limit, timeout or connection drop — re-test before filing as a bug">⟳ transient</span>`:'';
+      const partialBadge=f.isPartial?` <span class="bug-k" style="background:#eff6ff;color:#1d4ed8;border-color:#3b82f6;font-size:10px" title="Agent found a workaround — connector limitation is real but data was retrieved via alternate SQL">↪ workaround used</span>`:'';
+      return `<tr${f.isPartial?' style="opacity:0.85"':''}>
+        <td class="bug-id">F-${i+1}<div class="bug-tc">${esc(f.tc.id)}</div></td>
+        <td><span class="bug-k k-${esc(f.kind)}">${esc(KIND_LABEL[f.kind]||f.kind)}</span>${transientBadge}${partialBadge}</td>
+        <td>${f.sqlSource==='notes-desc'?`<div style="font-size:11px;color:#78350f;background:#fef3c7;border:1px solid #d97706;border-radius:4px;padding:4px 6px">${esc(clip(f.q,300))}</div><div style="font-size:9px;color:#92400e;margin-top:2px">⚠ no SQL recorded — what the agent attempted (description)</div>`:`<code>${esc(clip(f.q,300))}</code>`}${f.paramsResolved?`<div style="font-size:9px;color:#166534;margin-top:2px">✓ @params replaced with values from step data</div>`:''}${f.isPartial&&!['workaround','notes-desc'].includes(f.sqlSource)?`<div style="font-size:9px;color:#1d4ed8;margin-top:2px">planned query — connector couldn't serve this; agent used workaround</div>`:''}${f.sqlSource==='workaround'?`<div style="font-size:9px;color:#92400e;margin-top:2px">⚠ original failing query not recorded — showing workaround SQL</div>`:''}${f.sqlSource==='narrative'||f.sqlSource==='notes-sql'?`<div style="font-size:9px;color:var(--muted);margin-top:2px">extracted from step narrative</div>`:''}</td>
+        <td class="bug-notes">${esc(clip(f.prompt,160))}</td>
+        <td class="${f.kind==='empty'?'bug-empty':'bug-actual'}"><span style="font-weight:600">${esc(KIND_PLAIN[f.kind]||'')}</span>${KIND_PLAIN[f.kind]&&f.actual?`<div style="font-size:11px;margin-top:3px;color:var(--muted)">${esc(clip(f.actual,200))}</div>`:esc(clip(f.actual,240))}</td>
+        <td class="bug-notes">${esc(clip(f.notes,260))}</td></tr>`;
+    }).join('')}
+    </tbody></table></div>`:'';
+
+  const workTbl=worked.length?`<div class="bug-h bug-h-w">✅ Queries that worked &nbsp;<span class="bug-n">${worked.length}</span></div>
+    <div class="bug-scroll"><table class="bug-tbl"><thead><tr><th>ID</th><th>Query</th><th>Result</th></tr></thead><tbody>
+    ${worked.map((w,i)=>`<tr>
+      <td class="bug-id">W-${i+1}<div class="bug-tc">${esc(w.tc.id)}</div></td>
+      <td><code>${esc(w.q)}</code></td>
+      <td>${esc(clip(w.result,200))}</td></tr>`).join('')}
+    </tbody></table></div>`:'';
+
+  el.innerHTML=meta+failTbl+workTbl;
+})();
+
+/* Derive the fault table from the tests when the model did not write one, grouping identical
+   errors so one repeated driver limitation reads as one finding and not sixteen rows. */
+function deriveFaults(){
+  const rows=new Map();
+  GROUPS.flatMap(g=>g.tcs||[]).forEach(tc=>{
+    if(!['fail','partial','boundary'].includes(tc.status)) return;
+    const bad=(tc.steps||[]).filter(s=>s.t==='f'||s.t==='b');
+    const last=bad[bad.length-1];
+    const detail=(last&&(last.e||last.r))||tc.observed&&tc.observed.divergence&&tc.observed.divergence.join(' · ')||'No error text recorded';
+    const owner=ownerOf(tc);
+    const key=String(detail).slice(0,160);
+    if(!rows.has(key)) rows.set(key,{detail:key,owner,tc_ids:[],n:0});
+    const r=rows.get(key); r.tc_ids.push(tc.id); r.n++;
+    if(!r.owner&&owner) r.owner=owner;
+  });
+  return [...rows.values()].sort((a,b)=>b.n-a.n);
+}
+
+(function(){
+  // fault table
+  const ftEl=document.getElementById('fault-tbl');
+  const modelRows=FAULT_TABLE.length?FAULT_TABLE:null;
+  const derived=modelRows?null:deriveFaults();
+  if(modelRows){
+    ftEl.innerHTML=`<thead><tr><th>Issue</th><th>Owner</th><th>TCs</th><th>Detail</th></tr></thead><tbody>${modelRows.map(r=>`<tr><td><strong>${esc(r.issue)}</strong></td><td><span class="${r.owner_cls}">${esc(r.owner_label)}</span></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${(r.tc_ids||[]).join(', ')}</td><td style="font-size:11px">${esc(r.detail)}</td></tr>`).join('')}</tbody>`;
+  } else if(derived.length){
+    const ow={'owner-ai':['own-ai','AI'],'owner-driver':['own-drv','Driver'],'owner-schema':['own-sch','Schema'],'owner-ok':['own-ok','OK']};
+    ftEl.innerHTML=`<thead><tr><th>What went wrong</th><th>Owner</th><th>Tests</th><th>Which</th></tr></thead><tbody>${derived.map(r=>{
+      const o=ow[r.owner]||['',(r.owner||'unattributed')];
+      return `<tr><td style="font-size:11px">${esc(r.detail)}</td><td><span class="${o[0]}">${esc(o[1])}</span></td><td><strong>${r.n}</strong></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${r.tc_ids.slice(0,6).join(', ')}${r.tc_ids.length>6?` +${r.tc_ids.length-6}`:''}</td></tr>`;
+    }).join('')}</tbody>`;
+  } else {
+    ftEl.outerHTML='<p style="padding:0 0 12px;font-size:12px;color:var(--muted)">Every test passed — no failures, partials or blocked tests to analyse.</p>';
+  }
+  // DQ
+  const dqEl=document.getElementById('dq-section');
+  dqEl.innerHTML=DQ_OBSERVATIONS.length===0
+    ?(NOT_GENERATED.includes('Data quality observations')?notGen('Data quality observations'):'<p style="font-size:12px;color:var(--muted)">No data quality observations.</p>')
+    :DQ_OBSERVATIONS.map(d=>`<div class="dq-card"><span class="dq-sev dq-${esc(d.sev||'info')}">${esc(String(d.sev||d.type||'info').toUpperCase())}</span><div><strong>${esc(d.title||d.object||d.type||'')}</strong><br><span style="color:var(--muted)">${esc(d.detail||d.result||d.action||'')}</span></div></div>`).join('');
+  // caps
+  const capEl=document.getElementById('cap-grid');
+  capEl.innerHTML=caps.length?caps.map(([lvl,txt])=>{
+    const dc=lvl===1?'dot-g':lvl===2?'dot-y':'dot-r';
+    return `<div class="cap-item"><div class="${dc}"></div><span>${esc(txt)}</span></div>`;
+  }).join(''):notGen('The MCP capability matrix');
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   INSTRUCTIONS TAB
+   ═══════════════════════════════════════════════════════════ */
+/* A heading over an empty box tells the reader a section exists and then shows them nothing.
+   Hide the heading and its container together when there is no content to put under it. */
+function showSection(titleId,wrapId,hasContent){
+  for(const id of [titleId,wrapId]){ const e=document.getElementById(id); if(e) e.style.display=hasContent?'':'none'; }
+}
+(function(){
+  const raw=INSTR_EVAL.raw||'';
+  if(INSTR_EVAL.verdict==='not_generated'||NOT_GENERATED.includes('INSTR_EVAL')){
+    /* the scores were never computed, but the raw instructions we DID fetch are still a finding —
+       keep that section and drop the three that would render empty */
+    document.getElementById('instr-scores').innerHTML=notGen('The instructions evaluation');
+    ['instr-verdict','findings-table','instr-recs'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});
+    showSection('findings-t','findings-wrap',false);
+    showSection('instr-recs-t','instr-recs-wrap',false);
+    showSection('instr-raw-t','instr-raw-wrap',!!raw);
+    const r=document.getElementById('instr-raw'); if(r) r.textContent=raw;
+    return;
+  }
+  showSection('findings-t','findings-wrap',(INSTR_EVAL.findings||[]).length>0);
+  showSection('instr-recs-t','instr-recs-wrap',(INSTR_EVAL.recommendations||[]).length>0);
+  showSection('instr-raw-t','instr-raw-wrap',!!raw);
+  const sc=INSTR_EVAL.scores;
+  document.getElementById('instr-scores').innerHTML=`
+<div class="stat"><div class="stat-n" style="color:${sc.overall>=8?'#16a34a':sc.overall>=6?'#d97706':'#dc2626'}">${sc.overall}/10</div><div class="stat-l">Overall</div></div>
+<div class="stat"><div class="stat-n">${sc.completeness}/10</div><div class="stat-l">Completeness</div></div>
+<div class="stat"><div class="stat-n">${sc.accuracy}/10</div><div class="stat-l">Accuracy</div></div>
+<div class="stat"><div class="stat-n">${sc.actionability}/10</div><div class="stat-l">Actionability</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--pass)">${INSTR_EVAL.prevented}</div><div class="stat-l">Errors Prevented</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--fail)">${INSTR_EVAL.trialerror}</div><div class="stat-l">Trial-and-Error</div></div>`;
+  const vs=VERDICT_STYLE[INSTR_EVAL.verdict]||VERDICT_STYLE.needs_attention;
+  document.getElementById('instr-verdict').innerHTML=`<div style="margin:12px 28px;padding:12px 16px;border-radius:8px;border-left:4px solid ${vs.border};background:${vs.bg};color:${vs.text};font-size:12px;font-weight:600">Instructions verdict: ${INSTR_EVAL.verdict.replace(/_/g,' ').toUpperCase()} — ${INSTR_EVAL.prevented} errors prevented · ${INSTR_EVAL.trialerror} trial-and-error due to missing guidance</div>`;
+  const ftEl=document.getElementById('findings-table');
+  ftEl.innerHTML=`<thead><tr><th>Category</th><th>What Instructions Claim</th><th>What Actually Happened</th><th>TC Impact</th></tr></thead><tbody>${(INSTR_EVAL.findings||[]).map(f=>`<tr><td><strong>${esc(f.category)}</strong></td><td>${esc(f.claimed)}</td><td>${esc(f.actual)}</td><td>${esc(f.impact)}</td></tr>`).join('')}</tbody>`;
+  const recsEl=document.getElementById('instr-recs');
+  recsEl.innerHTML=(INSTR_EVAL.recommendations||[]).map(r=>`<li style="padding:4px 0">${esc(r)}</li>`).join('');
+  document.getElementById('instr-raw').textContent=INSTR_EVAL.raw||'';
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   GAP ANALYSIS TAB
+   ═══════════════════════════════════════════════════════════ */
+function gapFilter(f,btn){
+  document.querySelectorAll('#gap-filter-bar .sch-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#gap-list .gap-card').forEach(c=>{
+    const ok = f==='all' ? true
+             : f==='unresolved' ? ['OPEN','FAILED','PARTIALLY_CLOSED','NOT_TESTABLE'].includes(c.dataset.st)
+             : c.dataset.pri===f;
+    c.style.display = ok?'':'none';
+  });
+}
+(function(){
+  if(!GAPS.length){
+    document.getElementById('gap-summary').innerHTML='<div class="stat" style="grid-column:1/-1"><div class="stat-l">No gap analysis data — this report predates the coverage-driven runtime.</div></div>';
+    document.getElementById('gap-list').innerHTML='';
+    document.getElementById('gap-priority').innerHTML='';
+    return;
+  }
+  const by=s=>GAPS.filter(g=>g.final_status===s).length;
+  const closed=by('CLOSED'), part=by('PARTIALLY_CLOSED'), failed=by('FAILED'),
+        open=by('OPEN'), na=by('NOT_APPLICABLE'), nt=by('NOT_TESTABLE');
+  const resolvable=GAPS.length-na;
+  document.getElementById('gap-summary').innerHTML=`
+<div class="stat"><div class="stat-n">${GAPS.length}</div><div class="stat-l">Gaps Found</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--pass)">${closed}</div><div class="stat-l">Closed</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--partial)">${part}</div><div class="stat-l">Partially Closed</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--fail)">${failed}</div><div class="stat-l">Failed</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--ne)">${open}</div><div class="stat-l">Still Open</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--muted)">${na}</div><div class="stat-l">Not Applicable</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--schema)">${nt}</div><div class="stat-l">Not Testable</div></div>
+<div class="stat" style="background:var(--disc-bg);border-color:var(--disc)"><div class="stat-n" style="color:var(--disc)">${pct(closed,resolvable)}%</div><div class="stat-l">Closure Rate</div></div>`;
+
+  /* by priority, then by category */
+  const PRIS=['P1','P2','P3','P4'];
+  const priRows=PRIS.filter(p=>GAPS.some(g=>g.priority===p)).map(p=>{
+    const gs=GAPS.filter(g=>g.priority===p), c=gs.filter(g=>g.final_status==='CLOSED').length;
+    return `<div class="ev-row"><div><span class="badge gap-${p.toLowerCase()}" style="background:var(--bg3);color:var(--text)">${p}</span> <span style="color:var(--muted)">${gs.length} gaps</span></div>${bar(c,gs.length)}<div style="text-align:right;font-variant-numeric:tabular-nums">${c}/${gs.length} closed</div></div>`;
+  }).join('');
+  const cats=[...new Set(GAPS.map(g=>g.category))].sort();
+  const catRows=cats.map(cat=>{
+    const gs=GAPS.filter(g=>g.category===cat), c=gs.filter(g=>g.final_status==='CLOSED').length;
+    return `<div class="ev-row"><div><strong>${esc(cat)}</strong></div>${bar(c,gs.length)}<div style="text-align:right;font-variant-numeric:tabular-nums">${c}/${gs.length} closed</div></div>`;
+  }).join('');
+  document.getElementById('gap-priority').innerHTML=
+    `<div class="panel"><h4>By Priority</h4>${priRows}</div><div class="panel"><h4>By Category</h4>${catRows}</div>`;
+
+  /* Iteration rounds used to be reported here. Generation is single-pass and surface-driven now,
+     so the section only ever printed "Single round." — see config.json $rounds_comment. */
+
+  /* Stage 8.5 completeness audit. The one table that says what the plan MISSED, as opposed to
+     what it found — every other number in these reports is about tests that exist. */
+  {
+    const el = document.getElementById('tc-review');
+    const R = TC_REVIEW_SUMMARY;
+    if (el && !R) el.innerHTML = '<p style="font-size:12px;color:var(--muted)">No pre-execution review recorded for this run — the plan went to execution unaudited.</p>';
+    else if (el) {
+      const dims = (R.completeness || []).filter(d => d && d.dimension);
+      const rows = dims.map(d => {
+        const pct = d.surface ? Math.round((d.covered ?? 0) / d.surface * 100) : 100;
+        const col = pct === 100 ? 'var(--pass)' : pct >= 80 ? 'var(--partial)' : 'var(--fail)';
+        const missing = (d.untested || []).length
+          ? `<div class="note-line" style="margin-top:3px">${esc((d.untested || []).slice(0, 6).join(' · '))}${(d.untested || []).length > 6 ? ` …+${(d.untested||[]).length - 6}` : ''}</div>` : '';
+        return `<tr><td><b>${esc(d.dimension)}</b>${missing}</td>
+          <td style="text-align:center">${d.covered ?? '—'}/${d.surface ?? '—'}</td>
+          <td style="text-align:center;color:${col};font-weight:700">${pct}%</td>
+          <td>${esc(d.action || d.blocker || '')}</td></tr>`;
+      }).join('');
+      el.innerHTML =
+        `<div class="panel"><div class="note-line" style="margin-bottom:9px">Stage 8.5 compared the plan
+         against the connector and the business research, independently of the pipeline that produced it.
+         <b>${R.tcs_added ?? 0} test(s) were added</b> to close what it found${R.tcs_modified ? `, ${R.tcs_modified} rewritten` : ''}${R.tcs_merged ? `, ${R.tcs_merged} merged` : ''}.${
+           R.unreviewed ? ` <span style="color:var(--fail);font-weight:700">${R.unreviewed} test(s) were never reviewed.</span>` : ''}</div>` +
+        (rows ? `<table class="fault-tbl"><thead><tr><th>Dimension</th><th style="width:90px">Covered</th><th style="width:70px"></th><th>Reviewer's action</th></tr></thead><tbody>${rows}</tbody></table>` : '') +
+        ((R.unmapped_additions || []).length
+          ? `<div class="note-line" style="margin-top:10px"><b>${R.unmapped_additions.length} added test(s) matched no existing gap</b> —
+             the gap analysis missed these: ${esc(R.unmapped_additions.slice(0,4).map(u=>u.uc||u.id).join(' · '))}</div>` : '') +
+        ((R.web_findings || []).length
+          ? `<div class="note-line" style="margin-top:8px"><b>${R.web_findings.length} research finding(s):</b>
+             ${esc(R.web_findings.slice(0,3).map(f=>f.insight).join(' · '))}</div>` : '') +
+        `</div>`;
+    }
+  }
+
+  /* gap cards */
+  const order={P1:0,P2:1,P3:2,P4:3};
+  document.getElementById('gap-list').innerHTML=[...GAPS]
+    .sort((a,b)=>(order[a.priority]??9)-(order[b.priority]??9)||(b.priority_score||0)-(a.priority_score||0))
+    .map(g=>{
+      const im=g.impacted||{};
+      const imp=[['Objects',im.objects],['Columns',im.columns],['Relationships',im.relationships],['Patterns',im.patterns]]
+        .filter(([,v])=>v&&v.length).map(([k,v])=>`<b>${k}:</b> ${esc(v.join(', '))}`).join(' &nbsp;·&nbsp; ');
+      return `<div class="gap-card gap-${(g.priority||'p4').toLowerCase()}" data-pri="${esc(g.priority||'')}" data-st="${esc(g.final_status||'OPEN')}">
+<div class="gap-top">
+  <span class="gap-id">${esc(g.id)}</span>
+  <span class="badge cat-b">${esc(g.category)}</span>
+  <span class="badge tier-${esc(g.tier||'T4')}">${esc(g.tier||'—')}</span>
+  <span class="badge ${GAP_STATUS[g.final_status]||'st-open'}">${esc((g.final_status||'OPEN').replace(/_/g,' '))}</span>
+  <span style="margin-left:auto;font-size:10.5px;color:var(--muted)">${esc(g.priority||'')} · score ${g.priority_score??'—'}${g.detected_round?` · found round ${g.detected_round}`:' · pre-execution'}</span>
+</div>
+<div class="gap-desc">${esc(g.description)}</div>
+<div class="gap-meta">${imp?imp+'<br>':''}<b>Importance:</b> ${esc(g.business_importance||'—')} &nbsp;·&nbsp; <b>Evidence:</b> ${esc(g.evidence||'—')} <span class="prov prov-${g.evidence_strength==='STRONG'?'FACT':g.evidence_strength==='MEDIUM'?'INFERENCE':'UNKNOWN'}">${esc(g.evidence_strength||'WEAK')}</span>${(g.planned_tests||[]).length?`<br><b>Tests:</b> <span style="font-family:'JetBrains Mono',monospace;font-size:10px">${(g.planned_tests).join(', ')}</span>`:'<br><b>Tests:</b> none generated'}</div>
+</div>`;
+    }).join('');
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   COVERAGE MODEL TAB
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const C=COVERAGE;
+  if(!C){ document.getElementById('cov-dims').innerHTML='<p style="font-size:12px;color:var(--muted)">No coverage model in this report.</p>'; return; }
+  const dimCard=(name,sub,c,t,note)=>{
+    const p=pct(c,t), col=p>=80?'var(--pass)':p>=50?'var(--partial)':'var(--fail)';
+    return `<div class="dim-card"><div class="dim-name">${esc(name)}</div><div class="dim-sub">${esc(sub)}</div>
+<div><span class="dim-pct" style="color:${col}">${p}%</span><span class="dim-frac">${c} of ${t}</span></div>
+${bar(c,t)}${note?`<div class="dim-note">${note}</div>`:''}</div>`;
+  };
+  const o=C.objects||{}, tb=o.tables||{by_tier:{},rows:[]};
+  const tierSum=k=>Object.values(tb.by_tier||{}).reduce((s,v)=>s+(v[k]||0),0);
+  const cols=C.columns||{by_role:{},rows:[]}, rel=C.relationships||{rows:[]},
+        uc=C.use_cases||{rows:[]}, pat=C.patterns||{rows:[]},
+        intents=C.intents||{rows:[]}, beh=C.behaviors||{rows:[]};
+  const patApp=pat.rows.filter(r=>r.applicable);
+  document.getElementById('cov-dims').innerHTML=[
+    dimCard('A · Object Coverage','Tables, views and procedures counted separately',
+      tierSum('covered'), tierSum('total')-tierSum('na'),
+      `Views ${(o.views&&o.views.total)||0} · Procedures ${(o.procedures&&o.procedures.total)||0} · N/A excluded from denominator`),
+    dimCard('B · Column Coverage','Important columns only — technical columns never count as a gap',
+      cols.covered||0, cols.total_important||0,
+      'A table is not "covered" because one query touched it.'),
+    dimCard('C · Relationship Coverage','Joins actually exercised end to end',
+      rel.tested||0, rel.total||0, ''),
+    dimCard('D · Business Use Case Coverage','Real use cases from vendor reports, workflows and evidence',
+      uc.covered||0, uc.total||0, ''),
+    dimCard('E · Query Pattern Coverage','Applicable patterns only',
+      patApp.filter(r=>r.state==='covered').length, patApp.length,
+      `${pat.rows.length-patApp.length} patterns judged not applicable to this connector`),
+    dimCard('F · NL / Intent Coverage','Same question, different phrasings → same answer?',
+      intents.rows.filter(r=>r.semantic_match).length, intents.rows.length,
+      'Judged on semantic equivalence, not SQL string equality.'),
+    dimCard('G · Agent Behavior Coverage','Connector-level agent behaviors',
+      beh.rows.filter(r=>r.state==='covered').length, beh.rows.filter(r=>r.applicable).length, '')
+  ].join('');
+
+  document.getElementById('cov-tier-tbl').innerHTML=
+    `<thead><tr><th>Tier</th><th>Objects</th><th>Covered</th><th>Failed</th><th>N/A</th><th>Not Testable</th><th>Coverage</th></tr></thead><tbody>${
+    ['T1','T2','T3','T4'].filter(t=>tb.by_tier&&tb.by_tier[t]).map(t=>{
+      const v=tb.by_tier[t], den=v.total-(v.na||0);
+      const lbl={T1:'T1 Business Critical',T2:'T2 Important',T3:'T3 Supporting',T4:'T4 Technical'}[t];
+      return `<tr><td><span class="badge tier-${t}">${t}</span> ${lbl.slice(3)}</td><td>${v.total}</td><td style="color:var(--pass);font-weight:700">${v.covered}</td><td style="color:var(--fail)">${v.failed||0}</td><td style="color:var(--muted)">${v.na||0}</td><td style="color:var(--schema)">${v.nt||0}</td><td style="font-weight:700">${pct(v.covered,den)}%</td></tr>`;
+    }).join('')}</tbody>`;
+
+  document.getElementById('cov-uc-tbl').innerHTML=uc.rows.length?
+    `<thead><tr><th>Use Case</th><th>Domain</th><th>Persona</th><th>Objects</th><th>Source</th><th>Status</th><th>TCs</th></tr></thead><tbody>${
+    uc.rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${esc(r.domain||'')}</td><td>${esc(r.persona||'')}</td><td style="font-size:11px">${esc((r.objects||[]).join(', '))}</td><td><span class="src-tag">${esc(r.source||'')}</span></td><td><span class="badge ${r.state==='covered'?'st-closed':r.state==='failed'?'st-failed':'st-open'}">${esc((r.state||'').replace(/_/g,' '))}</span></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${(r.tc_ids||[]).join(', ')||'—'}</td></tr>`).join('')}</tbody>`
+    :'<p style="font-size:12px;color:var(--muted)">No use cases recorded.</p>';
+
+  document.getElementById('cov-patterns').innerHTML=`<div class="panel"><h4>Applicable Patterns</h4>${
+    patApp.map(r=>`<div class="ev-row"><div>${esc(r.pattern)} <span class="badge ${r.state==='covered'?'st-closed':'st-open'}" style="font-size:9px">${r.state==='covered'?'covered':'uncovered'}</span></div>${bar(r.customer_frequency!=null?Math.round(r.customer_frequency*100):(r.state==='covered'?100:0),100)}<div style="text-align:right;font-size:10.5px;color:var(--muted)">${r.customer_frequency!=null?Math.round(r.customer_frequency*100)+'% real usage':'—'}</div></div>`).join('')
+    }</div><div class="panel"><h4>Judged Not Applicable — with reasons</h4>${
+    pat.rows.filter(r=>!r.applicable).map(r=>`<div class="note-line"><b>${esc(r.pattern)}</b> — ${esc(r.applicability_reason||'no reason recorded')}</div>`).join('')||'<div class="note-line" style="color:var(--muted)">All candidate patterns were applicable.</div>'
+    }</div>`;
+
+  document.getElementById('cov-rel-tbl').innerHTML=rel.rows.length?
+    `<thead><tr><th>ID</th><th>From</th><th>To</th><th>Join Key</th><th>Confidence</th><th>Status</th><th>TCs</th></tr></thead><tbody>${
+    rel.rows.map(r=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${esc(r.id)}</td><td><strong>${esc(r.from)}</strong></td><td><strong>${esc(r.to)}</strong></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${esc(r.on||'—')}</td><td><span class="prov prov-${esc(r.confidence||'UNKNOWN')}">${esc(r.confidence||'UNKNOWN')}</span></td><td><span class="badge ${r.state==='covered'?'st-closed':r.state==='failed'?'st-failed':'st-open'}">${esc((r.state||'').replace(/_/g,' '))}</span></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${(r.tc_ids||[]).join(', ')||'—'}</td></tr>`).join('')}</tbody>`
+    :'<p style="font-size:12px;color:var(--muted)">No relationships discovered — that is itself a schema finding.</p>';
+
+  const sp=(o.procedures&&o.procedures.rows)||[];
+  document.getElementById('cov-sp-tbl').innerHTML=sp.length?
+    `<thead><tr><th>Procedure</th><th>Status</th><th>Params</th><th>Required Tested</th><th>Combos Tested</th><th>TCs</th></tr></thead><tbody>${
+    sp.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td><span class="badge ${r.state==='tested'?'st-closed':r.state==='failed'?'st-failed':r.state==='not_testable'?'st-nt':'st-open'}">${esc((r.state||'').replace(/_/g,' '))}</span></td><td>${r.params_total??'—'}</td><td>${r.params_required_tested??'—'}</td><td>${r.param_combos_tested??0}</td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${(r.tc_ids||[]).join(', ')||'—'}</td></tr>`).join('')}</tbody>`
+    :'<p style="font-size:12px;color:var(--muted)">This connector exposes no stored procedures.</p>';
+
+  document.getElementById('cov-intents').innerHTML=intents.rows.length?
+    intents.rows.map(r=>`<div class="panel"><h4>${esc(r.id)} — ${esc(r.canonical)} <span class="badge ${r.semantic_match?'st-closed':'st-failed'}">${r.semantic_match?'consistent':'INCONSISTENT'}</span></h4>
+<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Objects: ${esc((r.objects||[]).join(', '))} · TCs: <span style="font-family:'JetBrains Mono',monospace">${(r.tc_ids||[]).join(', ')}</span></div>
+${(r.phrasings||[]).map(p=>`<div class="note-line" style="font-style:italic;color:#0369a1">"${esc(p)}"</div>`).join('')}
+${r.semantic_match?'':'<div class="note-line" style="color:var(--fail);font-weight:600">⚠ The same business question produced different results depending on phrasing.</div>'}</div>`).join('')
+    :'<p style="font-size:12px;color:var(--muted)">No intent tests recorded.</p>';
+
+  document.getElementById('cov-behaviors').innerHTML=beh.rows.length?
+    beh.rows.map(r=>{
+      const dc=!r.applicable?'dot-y':r.state==='covered'?'dot-g':'dot-r';
+      return `<div class="cap-item"><div class="${dc}"></div><span>${esc(r.behavior.replace(/_/g,' '))}${r.applicable?'':' <span class="src-tag">(n/a)</span>'}</span></div>`;
+    }).join('')
+    :'<p style="padding:0 28px;font-size:12px;color:var(--muted)">No behavior tests recorded.</p>';
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   SEMANTIC SCHEMA TAB
+   ═══════════════════════════════════════════════════════════ */
+function semFilter(f,btn){
+  btn.parentElement.querySelectorAll('.sch-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#sem-objects .panel').forEach(c=>{
+    c.style.display=(f==='all'||c.dataset.tier===f)?'':'none';
+  });
+}
+(function(){
+  const K=KNOWLEDGE;
+  if(!K){ document.getElementById('sem-overview').innerHTML='<p style="font-size:12px;color:var(--muted)">No semantic schema in this report.</p>'; return; }
+  const list=(t,a)=>a&&a.length?`<div class="panel"><h4>${t}</h4>${a.map(x=>`<div class="note-line">${esc(x)}</div>`).join('')}</div>`:'';
+  document.getElementById('sem-overview').innerHTML=
+    `<div class="panel"><h4>Source System</h4><div style="font-size:12px;line-height:1.7">${esc(K.source_overview||'')}</div></div>`+
+    list('Capabilities',K.capabilities)+list('Known Limitations',K.limitations)+
+    (K.data_range&&Object.keys(K.data_range).length?`<div class="panel"><h4>Data Range Observed <span class="src-tag">— used only to interpret empty results, never to build queries</span></h4>${
+      Object.entries(K.data_range).map(([k,v])=>`<div class="note-line"><b>${esc(k)}</b> — ${esc(v.min)} → ${esc(v.max)} (${(v.count||0).toLocaleString()} rows)</div>`).join('')}</div>`:'');
+
+  const prov=m=>m?`<span class="prov prov-${esc(m.confidence||'UNKNOWN')}">${esc(m.confidence||'UNKNOWN')}</span> <span class="src-tag">${esc(m.source||'')}</span>`:'';
+  document.getElementById('sem-objects').innerHTML=(K.objects||[]).map(ob=>`
+<div class="panel" data-tier="${esc(ob.tier||'T4')}">
+  <div class="gap-top" style="margin-bottom:6px">
+    <strong style="font-size:13px">${esc(ob.name)}</strong>
+    <span class="badge tier-${esc(ob.tier||'T4')}">${esc(ob.tier||'—')}</span>
+    <span class="badge cat-b">${esc(ob.type||'TABLE')}</span>
+    <span class="badge cat-b">${esc(ob.category||'')}</span>
+    <span style="margin-left:auto;font-size:10.5px;color:var(--muted)" title="${esc((ob.tier_signals||[]).map(s=>typeof s==='string'?s:`${s.signal} (+${s.weight}) — ${s.desc||''}`).join('\n'))}">score ${ob.tier_score??'—'} · ${
+      /* tier_signals are {signal,weight,desc} objects; joining them printed [object Object] */
+      esc((ob.tier_signals||[]).map(s=>typeof s==='string'?s:(s&&s.signal)||'').filter(Boolean).join(' + '))}</span>
+  </div>
+  <div class="note-line"><b>Means:</b> ${esc((ob.business_meaning||{}).v||'—')} ${prov(ob.business_meaning)}</div>
+  <div class="note-line"><b>Domain:</b> ${esc((ob.business_domain||{}).v||'—')} ${prov(ob.business_domain)}</div>
+  ${(ob.personas||[]).length?`<div class="note-line"><b>Queried by:</b> ${esc(ob.personas.join(', '))}</div>`:''}
+  ${ob.columns_loaded===false?'<div class="note-line" style="color:var(--fail)">⚠ Columns never loaded — column coverage cannot exceed partial for this object.</div>':''}
+  ${(ob.columns||[]).length?`<table class="fault-tbl" style="margin-top:7px"><thead><tr><th>Column</th><th>Role</th><th>Important</th><th>Meaning</th></tr></thead><tbody>${
+    ob.columns.map(c=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10.5px">${esc(c.name)}</td><td><span class="badge cat-b">${esc(c.role||'')}</span></td><td>${c.important?'✓':'—'}</td><td style="font-size:11px">${esc((c.meaning||{}).v||'—')} ${prov(c.meaning)}</td></tr>`).join('')}</tbody></table>`:''}
+</div>`).join('')||'<p style="font-size:12px;color:var(--muted)">No objects recorded.</p>';
+
+  document.getElementById('sem-rels').innerHTML=(K.relationships||[]).length?
+    `<thead><tr><th>ID</th><th>From → To</th><th>Join Key</th><th>Meaning</th><th>Confidence</th><th>Tested</th></tr></thead><tbody>${
+    K.relationships.map(r=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${esc(r.id)}</td><td><strong>${esc(r.from)}</strong> → <strong>${esc(r.to)}</strong></td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${esc(r.on||'—')}</td><td style="font-size:11px">${esc(r.meaning||'')}</td><td><span class="prov prov-${esc(r.confidence||'UNKNOWN')}">${esc(r.confidence||'UNKNOWN')}</span> <span class="src-tag">${esc(r.source||'')}</span>${r.evidence_count?` <span class="src-tag">×${r.evidence_count}</span>`:''}</td><td>${r.tested?'<span class="badge st-closed">yes</span>':'<span class="badge st-open">no</span>'}</td></tr>`).join('')}</tbody>`
+    :'<p style="font-size:12px;color:var(--muted)">No relationships discovered.</p>';
+
+  const up=K.semantic_updates||[], cf=K.semantic_conflicts||[];
+  document.getElementById('sem-updates').innerHTML=
+    (up.length?`<div class="panel"><h4>Semantic Updates from Execution</h4>${up.map(u=>`<div class="note-line"><b>${esc(u.field)}</b> — was <em>${esc(u.old_value)}</em> → now <em>${esc(u.new_value)}</em><br><span class="src-tag">${esc(u.source)} · ${esc(u.evidence||'')}</span></div>`).join('')}</div>`:'')+
+    (cf.length?`<div class="panel" style="border-left:4px solid var(--fail)"><h4 style="color:var(--fail)">⚠ Provenance Conflicts — not silently overwritten</h4>${cf.map(c=>`<div class="note-line"><b>${esc(c.field)}</b><br>Higher precedence: ${esc(c.higher)}<br>Lower precedence: ${esc(c.lower)}<br><b>Resolution:</b> ${esc(c.resolution)}</div>`).join('')}</div>`:'')+
+    (!up.length&&!cf.length?'<p style="font-size:12px;color:var(--muted)">Execution produced no contradictions with the documented schema.</p>':'');
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOMER REALITY TAB
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const E=CUSTOMER_EVIDENCE||{available:false};
+  const statusEl=document.getElementById('cust-status');
+  if(!statusEl) return;
+  if(!E.available){
+    statusEl.innerHTML='<div class="panel" style="border-left:4px solid var(--ne)"><h4>Customer Query Evidence: Not Available</h4><div style="font-size:12px;line-height:1.7">No customer query dump was found for this connector. The full coverage model, gap analysis and test plan were built from connector metadata, vendor documentation and schema semantics alone. Customer evidence is an enrichment layer, never a prerequisite.</div></div>';
+    return;
+  }
+  statusEl.innerHTML=`<div class="panel" style="border-left:4px solid var(--pass)"><h4>Customer Query Evidence: Available</h4><div style="font-size:12px;line-height:1.7">${(E.query_count||0).toLocaleString()} real queries from ${E.file_count||0} file(s), matched to <code style="font-family:'JetBrains Mono',monospace">${esc(E.connector_match||'')}</code>. Used to validate AI assumptions, re-tier objects, decide pattern applicability and reproduce real production failures.</div></div>`;
+  document.getElementById('cust-summary').innerHTML=`
+<div class="stat"><div class="stat-n">${E.query_count.toLocaleString()}</div><div class="stat-l">Real Queries</div></div>
+<div class="stat"><div class="stat-n">${Object.keys(E.object_frequency||{}).length}</div><div class="stat-l">Objects Used</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--fail)">${(E.error_clusters||[]).reduce((s,c)=>s+c.count,0)}</div><div class="stat-l">Failed in Prod</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--partial)">${Math.round((E.zero_row_rate||0)*100)}%</div><div class="stat-l">Return 0 Rows</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--driver)">${Math.round((E.slow_query_rate||0)*100)}%</div><div class="stat-l">Over 10s</div></div>`;
+
+  const pf=E.pattern_frequency||{};
+  document.getElementById('cust-patterns').innerHTML=`<div class="panel"><h4>Pattern Frequency in Production — drives applicability decisions</h4>${
+    Object.entries(pf).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+      const p=Math.round(v*100), dead=v<0.01;
+      return `<div class="ev-row"><div>${esc(k.replace(/_/g,' '))}${dead?' <span class="badge st-na" style="font-size:9px">near-zero</span>':''}</div>${bar(p,100,dead)}<div style="text-align:right;font-variant-numeric:tabular-nums">${v<0.01&&v>0?(v*100).toFixed(1):p}%</div></div>`;
+    }).join('')}<div class="note-line" style="margin-top:8px;color:var(--muted)">A pattern near 0% across thousands of real queries is a NOT_APPLICABLE candidate — testing it burns budget without reducing risk.</div></div>`;
+
+  const of_=Object.entries(E.object_frequency||{}).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const maxF=of_.length?of_[0][1]:1;
+  document.getElementById('cust-objects').innerHTML=`<div class="panel"><h4>Top 20 by Reference Count — feeds object tiering</h4>${
+    of_.map(([k,v])=>`<div class="ev-row"><div><strong>${esc(k)}</strong></div>${bar(v,maxF)}<div style="text-align:right;font-variant-numeric:tabular-nums">${v.toLocaleString()}</div></div>`).join('')}</div>`+
+    ((E.join_pairs||[]).length?`<div class="panel"><h4>Real Joins Observed</h4>${E.join_pairs.map(j=>`<div class="note-line"><b>${esc(j.from)} → ${esc(j.to)}</b> on <code style="font-family:'JetBrains Mono',monospace;font-size:10.5px">${esc(j.on)}</code> · ${j.count} queries ${j.covered?'<span class="badge st-closed">tested</span>':'<span class="badge st-open">untested</span>'}</div>`).join('')}</div>`:'');
+
+  document.getElementById('cust-errors').innerHTML=(E.error_clusters||[]).length?
+    `<thead><tr><th>Production Error</th><th>Occurrences</th><th>Likely Owner</th><th>Reproduced?</th><th>TCs</th></tr></thead><tbody>${
+    E.error_clusters.map(c=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10.5px">${esc(c.pattern)}</td><td style="font-weight:700">${c.count}</td><td><span class="${esc(c.likely_owner||'owner-ai')}">${esc((c.likely_owner||'').replace('owner-','').toUpperCase())}</span></td><td>${c.reproduced?'<span class="badge st-closed">yes</span>':'<span class="badge st-open">no</span>'}</td><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${(c.tc_ids||[]).join(', ')||'—'}</td></tr>`).join('')}</tbody>`
+    :'<p style="font-size:12px;color:var(--muted)">No failing queries in the dump.</p>';
+
+  document.getElementById('cust-recon').innerHTML=(E.reconciliation||[]).length?
+    `<div class="panel">${E.reconciliation.map(r=>`<div class="note-line"><b>${esc(r.finding)}</b><br>→ ${esc(r.action)}</div>`).join('')}</div>`
+    :'<p style="font-size:12px;color:var(--muted)">Evidence confirmed the model — no changes required.</p>';
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   COST TAB
+   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   DISCOVERY FUNNEL · LIMITATIONS · RUN METADATA  (review C2, H4, L1)
+   The funnel states every denominator. Without it "80% covered" silently means
+   "80% of what the model decided to look at".
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  /* A partial funnel used to print "undefined" straight into a shipped report — the renderer
+     assumed every field existed, and a funnel written by an earlier version, or by a run that
+     stopped early, has only some. A missing denominator is "—", never the word undefined. */
+  const n=v=>v==null?'—':v;
+  const F=FUNNEL;
+  const html=F?(()=>{
+    const understood=(F.meaning_fact||0)+(F.meaning_inference||0);
+    const rows=[
+      ['Vendor business areas',`domains ${n(F.vendor_domains)} · workflows ${n(F.vendor_workflows)} · standard reports ${n(F.vendor_standard_reports)}`,F.vendor_domains||0,F.vendor_domains||0,'f-blind',
+        F.domains_without_connector_object?`${F.domains_without_connector_object} with NO connector object — EXPOSURE gaps`:'every domain has at least one object'],
+      ['Connector exposes',`getTables() · ${n(F.tables)} tables · ${n(F.views)} views · ${n(F.procedures)} procedures`,F.connector_objects||0,F.connector_objects||0,'f-seen',''],
+      ['Model understands',`FACT ${n(F.meaning_fact)} · INFERENCE ${n(F.meaning_inference)} · UNKNOWN ${n(F.meaning_unknown)}`,understood,F.connector_objects||0,'f-seen',F.meaning_unknown?`${F.meaning_unknown} object(s) with unknown meaning`:''],
+      ['Tiered important (T1+T2)',`T1 ${F.tier_counts?.T1||0} · T2 ${F.tier_counts?.T2||0} · T3 ${F.tier_counts?.T3||0} · T4 ${F.tier_counts?.T4||0} — the denominator deep coverage is measured against`,F.objects_t1_t2||0,F.connector_objects||0,'f-deep',''],
+      ['Tested',F.objects_tested==null?'not yet executed':`${F.objects_tested} object(s) with ≥1 passing test${F.objects_failed?` · ${F.objects_failed} failed`:''}`,F.objects_tested||0,F.connector_objects||0,'f-deep',''],
+    ];
+    const bar=(n,d,cls)=>`<div class="fr-bar"><div class="fr-fill ${cls}" style="width:${d?Math.max(2,Math.round(100*n/d)):0}%"></div></div>`;
+    return `<div class="funnel-h"><h3>Discovery funnel — what each number is a percentage of</h3><span style="font-size:11px;color:var(--muted)">Assessment confidence <b style="color:${F.assessment_confidence>=80?'var(--pass)':F.assessment_confidence>=60?'var(--partial)':'var(--fail)'}">${F.assessment_confidence==null?'—':F.assessment_confidence+'%'}</b></span></div>`
+      +rows.map(([l,s,n,d,cls,note])=>`<div class="fr"><div class="fr-l">${esc(l)}<small>${esc(s)}</small></div>${bar(n,d,cls)}<div class="fr-n">${n}</div></div>${note?`<div style="font-size:10.5px;color:${cls==='f-blind'?'var(--fail)':'var(--partial)'};padding:0 0 4px 212px">${esc(note)}</div>`:''}`).join('')
+      +`<div class="funnel-note">The first bar is what the vendor's own documentation says the system does. The framework can only see the second bar downward. The gap between bar 1 and bar 2 is what <b>EXPOSURE</b> gaps measure; the gap between bar 2 and bar 3 is what <b>assessment confidence</b> measures. Every coverage percentage elsewhere in this report uses bar 4 as its denominator.</div>`;
+  })():'<div class="funnel-h"><h3>Discovery funnel</h3></div><div style="font-size:11.5px;color:var(--muted)">No funnel data — this report predates compute-gaps.mjs. Coverage percentages below use a denominator the model selected without stating it.</div>';
+  for(const id of ['funnel-cov','funnel-gap']){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
+
+  /* limitations — what this run did NOT assess */
+  const lim=[];
+  if(F&&F.domains_without_connector_object) lim.push(`${F.domains_without_connector_object} vendor business area(s) have no connector object and could not be tested at all — see EXPOSURE gaps`);
+  if(F&&F.meaning_unknown) lim.push(`${F.meaning_unknown} exposed object(s) have UNKNOWN business meaning; their coverage is structural only`);
+  const nt=GAPS.filter(g=>g.final_status==='NOT_TESTABLE'); if(nt.length) lim.push(`${nt.length} gap(s) NOT TESTABLE — ${nt.slice(0,3).map(g=>g.id).join(', ')}${nt.length>3?'…':''}`);
+  const naP=(COVERAGE&&COVERAGE.patterns&&COVERAGE.patterns.rows||[]).filter(p=>!p.applicable); if(naP.length) lim.push(`${naP.length} SQL pattern(s) judged not applicable and not tested: ${naP.map(p=>p.pattern).join(', ')}`);
+  const t34=F&&F.tier_counts?((F.tier_counts.T3||0)+(F.tier_counts.T4||0)):0; if(t34) lim.push(`${t34} object(s) tiered T3/T4 received only a light probe by design; a mis-tiered critical object would look covered here`);
+  if(!(CUSTOMER_EVIDENCE&&CUSTOMER_EVIDENCE.available)) lim.push('No customer query evidence — object tiers and pattern applicability rest on documentation and inference alone');
+  const divs=GROUPS.flatMap(g=>g.tcs||[]).filter(t=>(t.observed&&t.observed.divergence||[]).length); if(divs.length) lim.push(`${divs.length} test(s) did not exercise the pattern they were designed for (prompt divergence) — see the Ran line on each`);
+  const limEl=document.getElementById('limits');
+  if(limEl) limEl.innerHTML=`<h4>What this run did not assess</h4><ul>${(lim.length?lim:['Nothing recorded — either the run was exhaustive or the funnel data is missing.']).map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
+
+  /* run metadata footer */
+  const R=RUN_META||{};
+  const m=R.models||{};
+  const rm=document.getElementById('runmeta');
+  if(rm) rm.innerHTML=[
+    `<b>${esc(CONNECTOR)}</b> · ${REPORT_KIND==='gap'?'gap analysis':'test'} report · skill v${esc(R.skill_version||'?')} · schema v${esc((COVERAGE&&COVERAGE.schema_version)||'?')}`,
+    `run <b>${esc(R.run_id||'unrecorded')}</b> · started ${esc(R.started_at||'?')} · finished ${esc(R.finished_at||R.generated_at||'?')} · metadata snapshot ${esc(R.metadata_snapshot_at||'?')}`,
+    `models — orchestrator <b>${esc(m.orchestrator||'unrecorded')}</b> · agent under test <b>${esc(m.under_test||'unrecorded')}</b> · research ${esc(m.research||'—')} · semantic ${esc(m.semantic||'—')} · execution <b>${esc(R.execution_mode||'unrecorded')}</b>${R.execution_mode==='in_thread'?' <span style="color:var(--partial)">(orchestrator answered its own prompts — weaker measurement)</span>':''}`,
+    `MCP server ${esc(R.mcp_server||'unrecorded')} · driver ${esc(R.driver_version||'unrecorded')} · connector build ${esc(R.connector_version||'unrecorded')} · customer evidence ${R.has_customer_evidence?'used':'not available'}`,
+    /* When a run writes records it cannot delete, where those records landed is the one fact a
+       reader cannot reconstruct later — the catalog name says nothing about which tenant is
+       behind it. Stated plainly, and loudly when it was never recorded. */
+    (()=>{const w=R.workspace||{}, wrote=(R.wrote_irreversibly??(R.write_policy||{}).execute_irreversible);
+      const who=w.name||w.id?`<b>${esc(w.name||w.id)}</b>${w.id&&w.name?` (${esc(w.id)})`:''}`:'<b>unrecorded</b>';
+      if(!wrote) return `target workspace ${who} · no irreversible writes in this run`;
+      return `target workspace ${who} · <span style="color:var(--fail);font-weight:700">this run created records it cannot delete</span>${(w.name||w.id)?'':' — and the workspace was not recorded, so where they landed cannot be established from this report'}`;})(),
+    `Coverage figures are relative to the connector's exposed schema as tiered by the model at run time. Generated text in this report was produced by a language model.`
+  ].join('<br>');
+})();
+
+const MODELS={haiku:{in:0.8,out:4},sonnet:{in:3,out:15},opus:{in:15,out:75},custom:null};
+function renderCost(){
+  const sel=document.getElementById('model-sel').value;
+  const cp=document.getElementById('custom-prices');
+  cp.style.display=sel==='custom'?'flex':'none';
+  let inp,outp;
+  if(sel==='custom'){inp=parseFloat(document.getElementById('in-price').value)||3;outp=parseFloat(document.getElementById('out-price').value)||15;}
+  else{inp=MODELS[sel].in;outp=MODELS[sel].out;}
+  const allTCs=GROUPS.flatMap(g=>g.tcs);
+  let totalIn=0,totalOut=0,totalCalls=0;
+  allTCs.forEach(tc=>{totalIn+=tc.est_in||0;totalOut+=tc.est_out||0;totalCalls+=tc.tool_calls||0;});
+  /* If token data wasn't recorded, estimate from tool_calls.
+     Heuristic (per TC): base ~6000 input + 400 output; per tool call ~4000 input + 300 output. */
+  const noTokenData=totalIn===0&&totalOut===0;
+  const executedTCs=allTCs.filter(tc=>tc.status&&!['ne','nt','na'].includes(tc.status)).length||allTCs.length;
+  if(noTokenData){totalIn=executedTCs*6000+totalCalls*4000;totalOut=executedTCs*400+totalCalls*300;}
+  const totalCost=(totalIn/1e6*inp)+(totalOut/1e6*outp);
+  document.getElementById('cost-summary').innerHTML=`
+<div class="stat"><div class="stat-n" style="color:var(--accent)">${totalIn.toLocaleString()}</div><div class="stat-l">${noTokenData?'Est. Input Tokens':'Input Tokens'}</div></div>
+<div class="stat"><div class="stat-n" style="color:#7c3aed">${totalOut.toLocaleString()}</div><div class="stat-l">${noTokenData?'Est. Output Tokens':'Output Tokens'}</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--driver)">${totalCalls}</div><div class="stat-l">Tool Calls</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--pass)">~$${totalCost.toFixed(2)}</div><div class="stat-l">${noTokenData?'Estimated Cost':'Est. Cost'}</div></div>
+${noTokenData?`<div style="grid-column:1/-1;font-size:11px;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 12px;margin-top:4px">i Token counts were not recorded per-TC this run. Cost is estimated using: ${executedTCs} executed TCs x avg 6000 input + ${totalCalls} tool calls x avg 4000 input. Actual cost is typically within 2x of this estimate.</div>`:''}
+`;
+  if(noTokenData) allTCs.forEach(tc=>{tc._estIn=6000+(tc.tool_calls||0)*4000;tc._estOut=400+(tc.tool_calls||0)*300;});
+  const maxIn=Math.max(...GROUPS.map(g=>g.tcs.reduce((a,t)=>a+(noTokenData?t._estIn:t.est_in||0),0)),1);
+  let byGroupHtml=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Token Cost by Group</div>`;
+  GROUPS.forEach(g=>{
+    const gIn=g.tcs.reduce((a,t)=>a+(noTokenData?t._estIn:t.est_in||0),0);
+    const gOut=g.tcs.reduce((a,t)=>a+(noTokenData?t._estOut:t.est_out||0),0);
+    const gCost=(gIn/1e6*inp)+(gOut/1e6*outp);
+    const pct=Math.round(gIn/maxIn*100);
+    const label=g.title.includes(' — ')?g.title.split(' — ')[1]:g.title;
+    byGroupHtml+=`<div class="cost-bar-row"><div style="font-size:11.5px">${esc(label)}</div><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:${pct}%"></div></div><div style="font-size:11px;color:var(--muted)">${gIn.toLocaleString()} in</div><div style="font-size:11px;color:var(--muted)">${gOut.toLocaleString()} out</div><div style="font-size:11px;font-weight:600">~$${gCost.toFixed(2)}</div></div>`;
+  });
+  document.getElementById('cost-by-group').innerHTML=byGroupHtml;
+  const rows=[...allTCs].sort((a,b)=>{const bi=noTokenData?b._estIn:b.est_in||0;const ai=noTokenData?a._estIn:a.est_in||0;return bi-ai;});
+  let tcTbl=`<table class="cost-tbl"><thead><tr><th>TC ID</th><th>Use Case</th><th>${noTokenData?'Est. Input':'Input'}</th><th>${noTokenData?'Est. Output':'Output'}</th><th>Calls</th><th>Est. Cost</th><th>Status</th></tr></thead><tbody>`;
+  rows.forEach(tc=>{
+    const tIn=noTokenData?tc._estIn:tc.est_in||0;
+    const tOut=noTokenData?tc._estOut:tc.est_out||0;
+    const c=(tIn/1e6*inp)+(tOut/1e6*outp);
+    const st=STATUS_MAP[tc.status]||{cls:'ne-b',label:'?'};
+    tcTbl+=`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)">${esc(tc.id)}</td><td>${esc(tc.uc||tc.prompt||'')}</td><td>${tIn.toLocaleString()}</td><td>${tOut.toLocaleString()}</td><td>${tc.tool_calls||0}</td><td style="font-weight:600">~$${c.toFixed(4)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
+  });
+  tcTbl+=`</tbody></table>`;
+  document.getElementById('cost-tc-table').innerHTML=tcTbl;
+  document.getElementById('cost-insights').innerHTML=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Cost Insights</div><ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12px"><li>Partial / self-corrected TCs generate ~2-3x more output tokens than clean passes due to extra tool calls.</li><li>Negative TCs (0-row results) are the cheapest -- AI needs minimal output to explain an empty result.</li><li>Fixing instruction gaps that caused failures would reduce total tokens by eliminating retry loops.</li></ul>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCHEMA COVERAGE TAB
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  if(!SCHEMA_COVERAGE) return;
+  const sc=SCHEMA_COVERAGE;
+  const notTested=(sc.total||0)-(sc.tested||0);
+  document.getElementById('schema-stats').innerHTML=`
+<div class="stat"><div class="stat-n" style="color:${sc.pct>=80?'var(--pass)':sc.pct>=60?'#d97706':'var(--fail)'}">${sc.pct}%</div><div class="stat-l">Schema Coverage</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--pass)">${sc.tested}</div><div class="stat-l">Tables Tested</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--fail)">${notTested}</div><div class="stat-l">Not Tested (Gaps)</div></div>
+<div class="stat"><div class="stat-n">${sc.total}</div><div class="stat-l">Total Tables</div></div>`;
+  // category cards
+  let cats='';
+  Object.entries(sc.by_category||{}).forEach(([key,d])=>{
+    const pct=d.total?Math.round(d.tested/d.total*100):0;
+    const bc=pct>=80?'#16a34a':pct>=60?'#d97706':'#dc2626';
+    cats+=`<div class="sch-cat-card">
+<div style="display:flex;justify-content:space-between;align-items:center">
+  <span style="font-size:12px;font-weight:600">${esc(d.label||key)}</span>
+  <span style="font-size:13px;font-weight:800;color:${bc}">${pct}%</span>
+</div>
+<div class="sch-bar-track"><div class="sch-bar-fill" style="width:${pct}%;background:${bc}"></div></div>
+<div style="font-size:11px;color:var(--muted)">${d.tested} / ${d.total} tables</div></div>`;
+  });
+  document.getElementById('schema-cats').innerHTML=cats;
+  // persona cards
+  let pcards='';
+  (PERSONAS||[]).forEach(p=>{
+    const pr=p.tc_count?Math.round(p.pass_count/p.tc_count*100):0;
+    const pc=pr>=80?'var(--pass)':pr>=60?'var(--partial)':'var(--fail)';
+    pcards+=`<div class="persona-card">
+<div class="persona-name">${esc(p.name)}</div>
+<div class="persona-desc">${esc(p.description||'')}</div>
+<div class="persona-stats">
+  <div class="persona-stat">TCs: <span>${p.tc_count||0}</span></div>
+  <div class="persona-stat">Pass: <span style="color:${pc}">${p.pass_count||0}</span></div>
+</div></div>`;
+  });
+  document.getElementById('persona-grid').innerHTML=pcards||'<p style="font-size:12px;color:var(--muted);padding:0 28px">No personas defined.</p>';
+  // initial table render
+  renderSchemaTable('all');
+})();
+
+function schFilter(cat,btn){
+  document.querySelectorAll('.sch-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchemaTable(cat);
+}
+function renderSchemaTable(cat){
+  if(!SCHEMA_COVERAGE) return;
+  const SL={'pass':'TESTED ✓','fail':'FAILED','not_tested':'NOT TESTED'};
+  const SC={'pass':'var(--pass)','fail':'var(--fail)','not_tested':'var(--ne)'};
+  const rows=(SCHEMA_COVERAGE.rows||[]).filter(r=>
+    cat==='all'?true:cat==='gap'?r.status==='not_tested':r.category===cat);
+  const el=document.getElementById('schema-tbl');
+  if(!rows.length){el.innerHTML='<tr><td colspan="4" style="padding:12px;color:var(--muted);font-size:12px">No tables in this filter.</td></tr>';return;}
+  el.innerHTML=`<thead><tr><th>Table</th><th>Category</th><th>Status</th><th>TCs</th></tr></thead><tbody>${
+    rows.map(r=>`<tr>
+<td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)">${esc(r.name)}</td>
+<td><span class="badge ne-b">${esc(r.category||'—')}</span></td>
+<td><span style="font-size:10px;font-weight:700;color:${SC[r.status]||'var(--ne)'}">${SL[r.status]||r.status}</span></td>
+<td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">${(r.tc_ids||[]).join(', ')||'—'}</td></tr>`).join('')
+  }</tbody>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROLE × PROCESS MATRIX (--all only)
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  if(!COVERAGE_MATRIX) return;
+  const {roles,processes,cells}=COVERAGE_MATRIX;
+  let html=`<table class="cov-matrix"><thead><tr><th class="row-hdr">Role</th>${processes.map(p=>`<th>${esc(p)}</th>`).join('')}</tr></thead><tbody>`;
+  roles.forEach(role=>{
+    html+=`<tr><td style="font-weight:600;background:var(--bg2)">${esc(role)}</td>`;
+    processes.forEach(proc=>{
+      const cell=cells[role+':'+proc];
+      if(!cell||!cell.count){html+=`<td class="cov-none">—</td>`;return;}
+      const cls=cell.fail>0?'cov-fail':'cov-good';
+      html+=`<td class="${cls}">${cell.pass}/${cell.count}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('cov-wrap').innerHTML=html;
+})();
+</script>
+</body></html>
+
+
+
+
+
+
+

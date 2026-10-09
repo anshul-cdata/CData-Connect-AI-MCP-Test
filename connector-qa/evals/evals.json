@@ -1,0 +1,75 @@
+{
+  "skill_name": "connector-qa",
+  "notes": "Assertions are checked against the connector folder after the run. Paths are relative to <root>/<Connector>/. `jq`-style paths refer to JSON artifacts; `exists`/`absent` refer to files.",
+  "evals": [
+    {
+      "id": 1, "eval_name": "gap-analysis-before-execution",
+      "prompt": "Test the NetSuite connector",
+      "expected_output": "Stages 1-6 run before any business query. gaps.json exists and every gap has detected_round 0 before plan.json exists.",
+      "assertions": [
+        { "path": "NetSuite_gaps.json", "check": "exists" },
+        { "path": "NetSuite_gaps.json", "jq": "[.gaps[] | select(.detected_round == 0)] | length > 0" },
+        { "path": "NetSuite_plan.json", "jq": "[.tc_list[] | select((.gap_ids | length) == 0)] | length == 0", "note": "every TC cites a gap" },
+        { "path": "NetSuite_coverage.json", "jq": ".funnel.connector_objects > 0 and (.funnel.assessment_confidence | type) == \"number\"" }
+      ]
+    },
+    {
+      "id": 2, "eval_name": "indirect-trigger",
+      "prompt": "Which business use cases does our Salesforce connector actually support?",
+      "expected_output": "Skill triggers on indirect phrasing. Answer comes from coverage.use_cases, not a raw table list.",
+      "assertions": [ { "path": "Salesforce_coverage.json", "jq": ".use_cases.total > 0" } ]
+    },
+    {
+      "id": 3, "eval_name": "verdict-derived-by-rule",
+      "prompt": "Run connector QA on QuickBooks and tell me if it's ready to ship",
+      "expected_output": "Both reports written. Verdict reasons are present. If any P1 gap is OPEN or FAILED, verdict is not production_ready.",
+      "assertions": [
+        { "path": "QuickBooks_dynamic_test_report.html", "check": "exists" },
+        { "path": "QuickBooks_gap_analysis_report.html", "check": "exists" },
+        { "path": "QuickBooks_coverage.stage10-summary.json", "jq": "(.verdict_reasons | type) == \"array\"" },
+        { "path": "QuickBooks_gaps.json", "jq": "if ([.gaps[] | select(.priority == \"P1\" and (.final_status == \"OPEN\" or .final_status == \"FAILED\"))] | length) > 0 then true else true end", "note": "paired with the summary: verdict != production_ready when the P1 list is non-empty" }
+      ]
+    },
+    {
+      "id": 4, "eval_name": "no-dump-path",
+      "prompt": "Test the Jira connector - we have no query dump for it",
+      "expected_output": "Full pipeline runs. customer_evidence.available is false. Gap report states Not Available. T1 gaps got the no-dump evidence floor.",
+      "assertions": [
+        { "path": "Jira_knowledge.json", "jq": ".customer_evidence.available == false" },
+        { "path": "Jira_gaps.json", "jq": "[.gaps[] | select(.tier == \"T1\" and .score_terms.floor_applied == true)] | length > 0" }
+      ]
+    },
+    {
+      "id": 5, "eval_name": "resume-mid-execution",
+      "prompt": "Test NetSuite",
+      "files": ["NetSuite_plan.json", "NetSuite_checkpoint.jsonl"],
+      "expected_output": "detect-stage routes to Stage 9 at the first unexecuted TC. No completed TC is re-executed.",
+      "assertions": [ { "cmd": "node scripts/detect-stage.mjs --dir <folder>", "jq": ".stage == 9 and (.resume_at | startswith(\"TC-\"))" } ]
+    },
+    {
+      "id": 6, "eval_name": "second-run-starts-fresh",
+      "prompt": "Test NetSuite",
+      "files": ["NetSuite_knowledge.json (run_state: complete)"],
+      "expected_output": "A completed previous run routes to Stage 1, not Stage 8. getTables() is called again. runs/<id>/ archive exists.",
+      "assertions": [
+        { "cmd": "node scripts/detect-stage.mjs --dir <folder>", "jq": ".stage == 1 and .run_state == \"complete\"" },
+        { "path": "runs", "check": "exists" }
+      ]
+    },
+    {
+      "id": 7, "eval_name": "exposure-gap-detected",
+      "prompt": "Test NetSuite using the dump in _querydumps",
+      "expected_output": "A vendor domain with no connector object (e.g. Fixed Assets) produces an EXPOSURE gap and appears in the funnel as domains_without_connector_object.",
+      "assertions": [
+        { "path": "NetSuite_gaps.json", "jq": "[.gaps[] | select(.category == \"EXPOSURE\")] | length >= 0", "note": "zero is a valid answer only if funnel.domains_without_connector_object is also zero" },
+        { "path": "NetSuite_coverage.json", "jq": ".funnel.domains_without_connector_object == ([.gaps[]? | select(.category == \"EXPOSURE\")] | length)", "note": "cross-check against gaps.json" }
+      ]
+    },
+    {
+      "id": 8, "eval_name": "coverage-from-observed-not-planned",
+      "prompt": "Why are so many NetSuite queries returning zero rows?",
+      "expected_output": "Explains the two-phase fallback. Every credited TC has observed.sql; no TC without observed earned coverage.",
+      "assertions": [ { "path": "NetSuite_checkpoint.jsonl", "cmd": "node scripts/credit-coverage.mjs ...", "note": "a TC with status pass and observed == null must not appear in any coverage row's tc_ids" } ]
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "$comment": [
+    "The only file you configure. Everything else is instructions, assets or code.",
+    "Leave `root` empty: install.ps1 fills it in for the machine it runs on, which keeps every",
+    "shared copy of this folder free of anyone's username. See SKILL.md 0.1 for resolution order."
+  ],
+  "version": "3.9.2",
+  "schema_version": "2.0.0",
+  "root": "",
+  "root_fallback": "%USERPROFILE%\\Documents\\ConnectAIMCPTest",
+  "defaults": {
+    "$rounds_comment": [
+      "Rounds are gone. Generation is surface-driven: Stage 8 enumerates the whole connector",
+      "surface (every object, procedure and advertised capability) in one pass, so there is",
+      "nothing to converge toward. The old iterate-until-gaps-close loop also corrupted",
+      "gap.planned_tests, because each round renumbered TCs from TC-001 while the gap ledger",
+      "appended the previous round's ids — 525 of 697 links pointed at tests that no longer",
+      "existed. What execution newly reveals is reported as guidance for the NEXT run instead.",
+      "`write_policy` decides what Stage 8 does with mutating procedures — see 06-test-generation.md."
+    ],
+    "$write_policy_comment": [
+      "3.7: connectors are tested on TEST accounts, so write safety is OFF by default (safe_mode: false):",
+      "use cases that create, change or remove records run, including creates the connector cannot delete",
+      "(set execute_irreversible: false to hold only those). safe_mode: true restores the strict rules —",
+      "irreversible writes held, a pinned workspace required, limitation probes that would write held.",
+      "confirm_at_start: every run first asks the user whether the workspace is a test account",
+      "(write-policy.mjs); 'read only' puts that connector folder in safe mode until answered again.",
+      "The shared copy must ship with confirm_at_start true and no workspace (tools/package.mjs checks).",
+      "Stage 1 records the workspace it actually observes into run_meta.workspace; the report shows it.",
+      "require_workspace_pin: connectors are tested against test accounts, so a workspace pin is",
+      "OPTIONAL by default. false: preflight-writes.mjs reports what will be written and proceeds; a",
+      "`workspace` you do set is still passed to the agent as operating context. true: the strict gate —",
+      "a pinned id, seen in the discovered catalog, not an organization, carried to every mutating test."
+    ],
+    "write_policy": {
+      "safe_mode": false,
+      "confirm_at_start": true,
+      "execute_reversible": true,
+      "irreversible_reason": "creates data the connector cannot delete (the delete capability is not exposed), so records created by a run stay in the workspace",
+      "require_workspace_pin": false,
+      "workspace": null,
+      "write_workspace": null
+    },
+    "$realism_comment": [
+      "Business-scenario prompts must read like the persona who would ask them. realism-check.mjs",
+      "lints every business prompt (no table names, raw ids, SQL words or test instructions) and merges",
+      "the realism judge's 1-5 scores; a business test scoring below min_score blocks execution while",
+      "enforce is true. Conformance tests (joins, patterns, procedures, write checks) are linted for",
+      "raw ids and test instructions only, and are never presented as business use cases."
+    ],
+    "realism": {
+      "min_score": 4,
+      "enforce": true,
+      "everyday_questions_per_persona": 3
+    },
+    "retry": {
+      "attempts": 3,
+      "backoff_seconds": [
+        2,
+        8,
+        30
+      ],
+      "query_timeout_seconds": 120
+    },
+    "persist_every_n_items": 10,
+    "parallel_batch_size": 5,
+    "$max_tcs_comment": "ADVISORY, not a limit. Exceeding it prints the breakdown and keeps every test — the connector's surface decides how many tests exist, and a config number trimming the tail removes use-case and workflow coverage first, which is where the business meaning lives. Asana alone has 461 distinct surface items against this value of 400. Pass --max N to generate-tests to trim deliberately.",
+    "max_tcs": 400,
+    "skip_tc_review": false,
+    "skip_post_exec_review": false,
+    "$completeness_comment": [
+      "Stage 8.5 fails the run when a whole dimension is planned below this share. asn004 shipped",
+      "2 tests for 19 procedures and 0 writes against a connector advertising insert+update, and",
+      "nothing in the pipeline objected — the review only validated the tests that existed."
+    ],
+    "min_dimension_coverage": 0.8,
+    "documented_tier_floor": "T2"
+  },
+  "models": {
+    "$comment": [
+      "Values are what the Agent tool accepts as `model`: sonnet | opus | haiku | fable, or `session` to",
+      "inherit the orchestrator's model. Only subagent stages are switchable — the orchestrator itself runs",
+      "on the session model. Every resolved model is recorded in run_meta so reports say what produced them.",
+      "`under_test` is the MCP agent being MEASURED at Stage 9: set it to whatever your production agents",
+      "run on. Choosing it for cost measures the wrong thing.",
+      "The two review passes are configured separately because they do different jobs.",
+      "`tc_review` (Stage 8.5) audits the plan against the connector surface and WRITES the missing",
+      "tests — it is the control that failed in asn004, where a review returned tcs_added:0 against a",
+      "plan holding 2 tests for 19 procedures. Judgement under ambiguity, so it earns the stronger model.",
+      "`post_exec_review` (Stage 10.5) narrates results that already exist and is far more constrained.",
+      "Both are intentionally independent of `under_test` — independence of judgment is the point.",
+      "NOTE: these are family aliases (sonnet|opus|haiku|fable), not versions. A specific Sonnet",
+      "release cannot be pinned here; the Agent tool exposes families only.",
+      "Per job: `research_business` runs the domain and persona researchers — their output now writes",
+      "the business prompts, so telling real work from vendor marketing earns the stronger model.",
+      "`research` runs the role and integration-pattern researchers (extraction from docs).",
+      "`tc_review` (Stage 8.5) also WRITES the business-scenario prompts from the generator's briefs.",
+      "`realism_judge` (Stage 8.6) scores them in a fresh context and must be at least as capable as",
+      "the writer. `fable` is the strongest judge; it requires 30-day data retention on the account, so",
+      "`opus` is the shipped default.",
+      "`answer_judge` decides use cases whose check rule is `judge` (several valid answers). Like every judge it",
+      "is fixed across an eval: only `under_test` varies between the models being compared.",
+    "`second_judge` (3.7) re-judges the same answers and realism scores independently. It never changes a result:",
+    "where the two disagree the report says so and the human sample looks there first. null turns it off."
+    ],
+    "research": "sonnet",
+    "research_business": "opus",
+    "semantic": "sonnet",
+    "under_test": "sonnet",
+    "tc_review": "opus",
+    "realism_judge": "opus",
+    "answer_judge": "opus",
+    "second_judge": "sonnet",
+    "post_exec_review": "sonnet",
+    "isolate_execution": true,
+    "$orchestrator_comment": [
+      "The orchestrator cannot be set from here — it IS the session, and a session is refused",
+      "permission to re-price its own turns. So it is GATED instead of assigned: set",
+      "`required_orchestrator` to a model id the app's picker offers, and Step 0 reads the real",
+      "session model and halts if it does not match. null means any model is acceptable.",
+      "This is stronger than hardcoding: run_meta then records what actually ran rather than what",
+      "someone typed. asn005 recorded 'claude-sonnet-4-6' as an unverified assertion."
+    ],
+    "required_orchestrator": null,
+    "$orchestrator_advice_comment": "3.9: advice, never a gate. Step 0 runs orchestrator-advice.mjs, which reads what is on disk and suggests sonnet (machine-readable API description, an API list assembled from web docs, or no vendor business API) or opus (more than max_tables tables, max_capabilities capabilities or max_areas business areas; more than max_areas_per_session areas in one session; an assembled list with more than max_unmatched_tables connector tables no documented operation acts on). Haiku is never suggested. When the session model is below the suggestion the user is told once; both are recorded in run_meta.orchestrator and shown in the reports' run details. enabled: false turns it off.",
+    "orchestrator_advice": { "enabled": true, "max_tables": 400, "max_capabilities": 500, "max_areas": 12, "max_areas_per_session": 4, "max_unmatched_tables": 25 }
+  },
+  "$capabilities_comment": [
+    "Stage 1.5 (references/10-capabilities.md). The source's own API description is the list of what it can do.",
+    "Operations under these tags, or on paths matching the pattern, are not data capabilities a connector should",
+    "offer (sign-in flows, webhook delivery, batch envelopes) and are reported as not applicable, never as gaps."
+  ],
+  "capabilities": {
+    "not_applicable_tags": ["Webhooks", "OAuth", "Batch API", "Authentication"],
+    "not_applicable_path": "/(webhooks|oauth|batch)(/|$)",
+    "mcp_table_ops": ["SELECT", "INSERT", "UPDATE"],
+    "compare_vendor_mcp": true,
+    "vendor_mcp_recheck_days": 90,
+    "api_docs": { "shell_min_chars": 1500, "chunk_chars": 40000, "chunk_overlap_chars": 600, "delay_ms": 1000, "timeout_ms": 30000 },
+    "$api_docs_comment": "3.9: the shared page reader (references/10a-page-reader.md) used by api-from-docs.mjs (Stage 1.5a without an OpenAPI) and by use case research. A page whose text is shorter than shell_min_chars, or an API page with no endpoint-like line and the signs of a client-side app, is a JavaScript shell and is read with a rendered browser. Long pages are saved in chunk_chars parts. Plain HTTP requests are sequential, delay_ms apart, and respect robots.txt.",
+    "$compare_vendor_mcp_comment": "3.8: Stage 1.5e runs by default in capability mode — the source vendor's own MCP server is compared with CData ConnectAI MCP on the same capability list (reference-mcp.mjs). false, or --no-compare-mcp for one run, skips it. A vendor with no MCP server is recorded once (reference-mcp.mjs none); the tool list is read again when older than vendor_mcp_recheck_days.",
+    "$mcp_table_ops_comment": "3.7: the table operations ConnectAI MCP's tools can run (queryData, execute_insert, execute_update). A driver DELETE outside this list is not supported through MCP; a delete procedure still is. Add DELETE here only if the MCP server gains a delete tool."
+  },
+  "$catalog_comment": [
+    "Stage 2.5 (references/11-catalog.md). The use case catalog is frozen only when every use case is valid,",
+    "judged at or above defaults.realism.min_score, and a human sample of human_sample use cases agrees with",
+    "the judge at least min_agreement of the time. dedup flags two requests this similar (0-1) as duplicates.",
+    "3.1: frozen per business area. An area also needs human_min_per_area ratings that still match the wording",
+    "(a review stands until the area grows by more than human_regrow), min_capability_coverage of its",
+    "capabilities used by a use case or explained, and — with verify_sources — every cited page checked.",
+    "Set checks (11-catalog.md): each area reaches the mix floors (use cases per difficulty and per skill tested)",
+    "and min_per_persona use cases per persona, unless the writer explains why under mix_explained; a persona",
+    "holding more than max_persona_share of an area, and requests shared across personas at persona_overlap",
+    "similarity, are flagged for the coverage reviewer. coverage_review: a fresh reviewer reads each area's whole",
+    "set before freeze and every finding is answered."
+  ],
+  "catalog": {
+    "human_review": false,
+    "$human_review_comment": "3.9: off by default. false: an area is frozen without the human rating sheet (manage-catalog.mjs freeze needs no ratings; the run never pauses for it), the freeze is recorded as human_skipped (human_skipped_by: config) and the reports say 'Not reviewed - human review is off'. true: today's gate - freeze blocks until human_min_per_area ratings of a human_sample agree with the judge (min_agreement). freeze --skip-human still skips it for one freeze.",
+    "human_sample": 20,
+    "min_agreement": 0.8,
+    "dedup": 0.8,
+    "human_min_per_area": 5,
+    "human_regrow": 0.25,
+    "min_capability_coverage": 1.0,
+    "verify_sources": true,
+    "coverage_review": true,
+    "max_inferred_share": 0.3,
+    "min_per_persona": 2,
+    "max_persona_share": 0.5,
+    "persona_overlap": 0.5,
+    "mix": { "simple": 1, "medium": 1, "complex": 2, "dates": 2, "aggregation": 2, "relationships": 2, "write": 1, "ambiguity": 1, "missing_info": 1, "limitation": 1 }
+  },
+  "$scope_comment": [
+    "3.1 (references/13-scope.md). Research is done per business area. One researcher is handed at most",
+    "max_areas_per_batch areas and max_capabilities_per_batch capabilities; a bigger area is split along its flows.",
+    "--areas accepts up to max_areas_per_run areas; --all researches every area, in batches."
+  ],
+  "scope": {
+    "max_areas_per_batch": 3,
+    "max_capabilities_per_batch": 60,
+    "max_areas_per_run": 6
+  },
+  "$eval_comment": "Models compared when --eval is given without a list. Research, writing and judging stay on models.* — only the agent under test varies.",
+  "eval": {
+    "default_models": ["opus", "sonnet", "haiku"]
+  },
+  "$execution_comment": [
+    "Stage 9. P1 use cases (daily) run attempts_p1 times so their score is stable; the rest attempts_other times.",
+    "result_chars and rows_kept bound what each agent returns per call and as its final rows.",
+    "area_ready_min: below this share of an area's use cases able to test the AI (dispatched, with data), preflight-data.mjs prints AREA NOT READY and the run stops for the user's decision. A warning, never a cap.",
+    "attempts_complex: optional (off when null) — at least this many attempts for every complex use case, where one attempt is close to a coin toss. Costs tokens on every run.",
+    "probe_limitations: a use case ConnectAI MCP cannot do is still put to the agent once, to see whether it says so or invents an answer (3.6). One that would write runs only when execute_irreversible is true."
+  ],
+  "execution": {
+    "attempts_p1": 3,
+    "attempts_other": 1,
+    "result_chars": 4000,
+    "rows_kept": 50,
+    "area_ready_min": 0.5,
+    "probe_limitations": true,
+    "attempts_complex": null
+  },
+  "$scoring_comment": [
+    "lib/scoring.mjs. Scores are recomputed from stored journeys every time a capability report or eval",
+    "is built (rescore(): the shortest path and speed norms come from the runs shown together), so",
+    "changing these needs no new run.",
+    "A wrong answer is always red and a partial one at best yellow, whatever the other parts score."
+  ],
+  "scoring": {
+    "weights": { "correctness": 50, "efficiency": 20, "robustness": 15, "speed": 15 },
+    "grades": { "blue": 85, "yellow": 60 }
+  },
+  "$pricing_comment": [
+    "Optional, for the eval report's cost per 100 correct answers: { \"<model>\": { \"per_mtok\": <blended $ per",
+    "million tokens> } }. Left empty, the report shows tokens only and never guesses a price."
+  ],
+  "pricing": {},
+  "query_dumps": {
+    "shared_dir": "_querydumps",
+    "per_connector_dir": "querydump",
+    "required_column": "Query"
+  },
+  "delegation": {
+    "parallel_research_agents": true,
+    "tier_before_columns_above_objects": 100,
+    "shard_semantic_schema_above_objects": 40,
+    "mine_dumps_with_script": true
+  },
+  "artifacts": {
+    "knowledge": "{connector}_knowledge.json",
+    "coverage": "{connector}_coverage.json",
+    "gaps": "{connector}_gaps.json",
+    "plan": "{connector}_plan.json",
+    "tc_review": "{connector}_tc_review.json",
+    "jdbc_suite": "{connector}_jdbc_suite.json",
+    "checkpoint": "{connector}_checkpoint.json",
+    "report": "{connector}_dynamic_test_report.html",
+    "gap_report": "{connector}_gap_analysis_report.html",
+    "capabilities": "{connector}_capabilities.json",
+    "catalog": "{connector}_catalog.json",
+    "capability_report": "{connector}_capability_report.html",
+    "eval_plan": "{connector}_eval_plan.json",
+    "research_plan": "{connector}_research_plan.json"
+  },
+  "retain_after_report": [
+    "knowledge",
+    "coverage",
+    "gaps",
+    "plan"
+  ],
+  "delete_after_report": [
+    "checkpoint"
+  ],
+  "driver_source": {
+    "root": "",
+    "$comment": "Absolute path to the CData driver enlistment (the folder holding Provider* directories). Machine-specific: left empty in the shared copy and resolved at run time from --root, then CONNECTOR_QA_DRIVER_ROOT, then this key. Empty means Stage 0.5 is skipped and the run behaves exactly as before."
+  }
+}
