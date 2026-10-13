@@ -51,6 +51,13 @@ without a model, so each run improvised one.
 - **Not changed, and noted.** `snap --text-file` still applies a lenient 400-character bar to browser text
   while plain HTTP applies 1,500; `render` and `ingest` use the strict bar because they save whole pages.
   Aligning `snap` and recording how each page was captured in the report is left for a later release.
+- **Known issue — Windows + Node 24.** `process.exit()` can abort inside libuv (exit code 0xC0000409, "Assertion
+  failed: !(handle->flags & UV_HANDLE_CLOSING), src\win\async.c") while an HTTP connection from `fetch` is still
+  closing. It breaks the exit codes of the plain-HTTP commands of `api-from-docs.mjs` (`ladder`, `inventory`,
+  `snap`) on that platform, and is why 5 tests in `tests/api-docs-390.test.mjs` fail there both before and after
+  this release (identical failures on the untouched 3.9.2). `render` drains briefly before exiting so it does not
+  hit it; the other commands are not changed here. `npm test` also fails on Node 24 because `node --test tests/`
+  does not accept a bare directory — run `node --test "tests/*.test.mjs"`.
 
 ## 3.9.2 — 2026-10-09
 
