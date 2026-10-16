@@ -96,12 +96,20 @@ column coverage, and that is itself a `SCHEMA` gap.**
 $SP_REGISTRY = $PROCEDURES.map(p => ({
   name:            p.name,
   description:     p.description || "(undocumented)",
-  params:          $PROC_PARAMS[p.name],    // [{name, type, required}]
+  params:          $PROC_PARAMS[p.name],    // [{name, type, required, direction}] — for EVERY procedure
   required_params: /* subset where required === true */,
   covered:         false,                    // set true when a TC cites it
   param_combos_tested: []                    // filled in Stage 10
 }));
 ```
+
+**Record every procedure's parameters, with their type and direction (3.9.4).** `getProcedureParameters` for each
+procedure, stored under `physical.procedures[].params`. They are not bookkeeping: the capability mapping reads them
+to tell a procedure an agent can call from one it cannot. ConnectAI MCP tools pass only JSON values, so a procedure
+whose file comes from a local path or a stream (QuickBooks' `UploadAttachment`: `FilePath` or `Content`), or that
+writes a download to a folder on the server, is listed but unusable. Without the parameters it is matched by name
+alone, mapped "exposed", and a use case built on it reads "Ready to test" for something no agent can complete.
+`capability-list.mjs map` warns when procedures have none recorded.
 
 ### 1.4 Categorize every object
 

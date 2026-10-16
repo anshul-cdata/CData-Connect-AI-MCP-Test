@@ -112,6 +112,12 @@ if (cmd === 'map') {
   doc.capabilities = mapToConnector(doc.capabilities, K, C);
   doc.mapped_at = new Date().toISOString();
   writeJson(CAPS, doc);
+  /* 3.9.4: an upload that needs a local file or stream is recognised only from the procedure's parameters */
+  const procs = (K.physical?.procedures || []).filter(p => p && typeof p === 'object');
+  const bare = procs.filter(p => !Array.isArray(p.params) || !p.params.length);
+  if (bare.length) console.log(`  ⚠ ${bare.length} of ${procs.length} procedure(s) have no parameter list recorded (${bare.slice(0, 4).map(p => p.name).join(', ')}${bare.length > 4 ? ', …' : ''}).\n    A procedure that needs a local file or stream cannot be recognised without it, and would be mapped as usable. Record each one's parameters\n    (getProcedureParameters → {name, type, required, direction} under physical.procedures[].params, references/01-discovery.md §1.3), then run map again.`);
+  const ft = doc.capabilities.filter(c => c.mapping?.file_transfer);
+  if (ft.length) console.log(`  ${ft.length} capabilit${ft.length === 1 ? 'y' : 'ies'} reach a procedure that moves file bytes — ${ft.map(c => `${c.id} (${c.mapping.file_transfer.kind})`).join(', ')}`);
 }
 
 if (cmd === 'apply') {

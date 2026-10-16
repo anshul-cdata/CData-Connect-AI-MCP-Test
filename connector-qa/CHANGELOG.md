@@ -3,6 +3,45 @@
 All notable changes to the connector-qa skill. Versions follow semver; `schema_version` on the
 artifacts tracks the major version and a reader refuses a mismatched major.
 
+## 3.9.4 — 2026-10-16
+
+A procedure that cannot be called is no longer mapped as usable. ConnectAI MCP tools pass only JSON values, so a
+procedure that needs a local file path, a stream or a download folder is listed by the connector but no agent can
+complete it. QuickBooks Online's `UploadAttachment` (a `FilePath` or a `Content` stream, with no text alternative)
+is the example: the skill matched procedures to capabilities by name and never read their parameters, so the upload
+was mapped "exposed" and any use case built on it would have read "Ready to test". It came out right in the
+QuickBooks run only because the connector's usage notes happened to say so and the reviewer read them. A connector
+without such a note would have been mapped wrongly, and nothing would have shown it.
+
+- **Detection — `scripts/lib/file-transfer.mjs` (new).** `fileTransfer(proc)` decides from the procedure's own
+  parameters (`{name, type, required, direction}`, the shape the registry already uses): **upload_needs_file** (a
+  path or stream is the only way to supply the file) and **download_to_disk** (it writes to a folder or stream and
+  returns nothing else) are not usable; **upload_base64** and **download_base64** (the file travels as text) are
+  usable for small files only, since every byte passes through the assistant's context. It decides only from clear
+  parameter evidence — a binary type, a stream or path name, a download-folder name — never from the procedure's name,
+  and returns nothing when parameters are missing, so a connector without this shape maps exactly as before. A text
+  column called `Content`, or a remote `FolderId`, is not a file transfer.
+- **Mapping — `lib/capabilities.mjs`.** `mapToConnector` corrects an `exposed` mapping to such a procedure:
+  unusable becomes **not_exposed**, with the reason in its note ("takes a local file path or a stream (FilePath,
+  Content) and has no text alternative … the file bytes cannot be supplied"); base64 becomes **partly**. The mapping
+  records `file_transfer {kind, procedure, params}`. A reviewer's decision is never recomputed.
+- **A warning, not a silent skip — `capability-list.mjs map`.** When procedures exist but their parameters were
+  never recorded, `map` says how many and which, and how to fix it. Stage 1 always said to record them
+  (`$SP_REGISTRY`); nothing checked, and the QuickBooks run stored all 16 with none.
+- **Docs.** `01-discovery.md` §1.3 now says why parameters must be recorded, with direction; `10-capabilities.md`
+  §1.5b states the rule and tells the 1.5c reviewer to receive procedures with their parameters; `15-scripts.md`.
+- **Effect on reports, and what is unchanged.** Capability statuses keep their five values, so no report, template
+  or stored result changes shape; a use case that needs an unusable upload reads "Not supported by CData ConnectAI
+  MCP" with the reason in the capability's note, not a new outlook. Parameters are the only evidence, so a procedure
+  whose parameters are not recorded is not flagged.
+- **Tests — `tests/file-transfer-394.test.mjs` (new, 10).** The upload, the base64 upload, both downloads, and the
+  cases that must stay untouched (`SendInvoice`, a text `Content`, a remote folder id, no parameters, bare names);
+  `mapToConnector` before and after parameters are recorded, an ordinary connector mapping identically, a reviewed
+  mapping left alone; and the `map` warning appearing and not appearing. The parameter lists are modelled on the
+  names in the QuickBooks usage instructions, not live metadata (the connection was not reachable when written).
+- **Not done.** The outlook has no separate "needs file transfer" value; adding one means changing the report
+  template. A transfer that fits within a few kilobytes is called "small" without measuring a limit.
+
 ## 3.9.3 — 2026-10-09
 
 Page capture without a model in the loop. Reading a JavaScript-drawn API reference (QuickBooks Online: 74

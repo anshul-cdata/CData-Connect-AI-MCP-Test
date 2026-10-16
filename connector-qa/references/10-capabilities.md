@@ -142,6 +142,15 @@ gap) · **not_applicable** (sign-in, webhooks, batch envelopes — `config.capab
 **product_only** (the product does it, its API does not — never a CData gap). Re-reading a newer
 spec keeps every reviewed mapping.
 
+**Procedures that move file bytes (3.9.4).** A procedure whose parameters show a local file path, a stream or a
+download folder (`lib/file-transfer.mjs`) cannot be called through the cloud MCP tools, which pass only JSON
+values. `map` corrects an `exposed` mapping to such a procedure: an upload whose only inputs are a path or stream,
+or a download that only writes to a folder, becomes **not_exposed** with the reason in its note; an upload or
+download that carries the file as base64 text becomes **partly** ("small files only: every byte passes through the
+assistant's context"). It decides only from parameters the connector reports, never from the name, and does nothing
+when none were recorded (Stage 1, `01-discovery.md` §1.3). Give the 1.5c reviewer the procedures **with** their
+parameters; a reviewed mapping is never recomputed.
+
 ## 1.5c Review and group — by model
 
 `map` exits 3 until two things are done, because a capability list built on guesses would make every

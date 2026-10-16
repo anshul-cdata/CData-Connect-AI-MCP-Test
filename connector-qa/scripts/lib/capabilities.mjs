@@ -17,6 +17,8 @@
  * counted, never guessed.
  */
 
+import { applyFileTransfer } from './file-transfer.mjs';
+
 export const METHODS = ['get', 'post', 'put', 'patch', 'delete'];
 
 /* ── parsing ─────────────────────────────────────────────────────────────── */
@@ -345,7 +347,9 @@ export function mapToConnector(caps, K, opts = {}) {
         }
       }
     }
-    return { ...c, mapping: m };
+    /* 3.9.4: a procedure that needs a local file or stream cannot be called through the cloud MCP tools,
+     * whatever its name matched — the parameters say so (lib/file-transfer.mjs) */
+    return { ...c, mapping: applyFileTransfer(m, procs) };
   });
   enforceMcpReach(mapped, opts.mcp_table_ops);
   return mapped;
